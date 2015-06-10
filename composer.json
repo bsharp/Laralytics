@@ -1,0 +1,27 @@
+{
+    "name": "nicolasbeauvais/laralytics",
+    "description": "A simple analytics tool for Laravel",
+    "keywords": ["laravel", "laravel5", "analytics"],
+    "homepage": "https://github.com/nicolasbeauvais/laralytics",
+    "authors": [
+        {
+            "name": "Nicolas Beauvais",
+            "email": "nicolasbeauvais1@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "5.1.*"
+    },
+    "autoload": {
+        "classmap": [
+            "src/migrations",
+            "src/controllers"
+        ],
+        "psr-4": {
+            "Nicolasbeauvais\\Laralytics\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
