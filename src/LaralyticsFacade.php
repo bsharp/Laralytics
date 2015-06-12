@@ -1,10 +1,10 @@
-<?php namespace Nicolasbeauvais\Laralytics;
+<?php namespace Bsharp\Laralytics;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
  * Class LaralyticsFacade
- * @package Nicolasbeauvais\Laralytics
+ * @package Bsharp\Laralytics
  */
 class LaralyticsFacade extends Facade
 {

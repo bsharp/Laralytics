@@ -1,10 +1,10 @@
-<?php namespace Nicolasbeauvais\Laralytics;
+<?php namespace Bsharp\Laralytics;
 
 use Illuminate\Translation\TranslationServiceProvider;
 
 /**
  * Class LaralyticsServiceProvider
- * @package Nicolasbeauvais\Laralytics
+ * @package Bsharp\Laralytics
  */
 class LaralyticsServiceProvider extends TranslationServiceProvider
 {

@@ -1,8 +1,8 @@
-<?php namespace Nicolasbeauvais\Laralytics;
+<?php namespace Bsharp\Laralytics;
 
 /**
  * Class Laralytics
- * @package Nicolasbeauvais\Laralytics
+ * @package Bsharp\Laralytics
  */
 class Laralytics
 {

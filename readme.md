@@ -7,7 +7,7 @@
 To install Laralytics as a Composer package to be used with Laravel 5.*, simply add this to your composer.json:
 
 ```
-  "nicolasbeauvais/laralytics": "dev-master"
+  "Bsharp/laralytics": "dev-master"
 ```
 
 ### Publish

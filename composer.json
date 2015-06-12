@@ -1,5 +1,5 @@
 {
-    "name": "nicolasbeauvais/laralytics",
+    "name": "bsharp/laralytics",
     "description": "A simple analytics tool for Laravel",
     "keywords": ["laravel", "laravel5", "analytics"],
     "homepage": "https://github.com/nicolasbeauvais/laralytics",
@@ -16,11 +16,9 @@
     },
     "autoload": {
         "classmap": [
-            "src/migrations",
-            "src/controllers"
         ],
         "psr-4": {
-            "Nicolasbeauvais\\Laralytics\\": "src/"
+            "Bsharp\\Laralytics\\": "src/"
         }
     },
     "minimum-stability": "stable"
