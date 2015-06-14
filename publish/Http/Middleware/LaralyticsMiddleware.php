@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Laralytics;
 use Illuminate\Contracts\Auth\Guard;
 
 /**
@@ -37,7 +38,10 @@ class LaralyticsMiddleware
      */
     public function handle($request, Closure $next)
     {
-        \Laralytics::log('', []);
+        $path = $request->path();
+
+        $path = starts_with($path, '/') ? $path : '/' . $path;
+        Laralytics::log('url', ['path' => $path]);
 
         return $next($request);
     }

@@ -32,6 +32,13 @@ class LaralyticsServiceProvider extends TranslationServiceProvider
         $this->publishes([
             __DIR__ . '/../publish/Http/Middleware/' => app_path('/Http/Middleware')
         ], 'middleware');
+
+        /**
+         * register publish Eloquent model
+         */
+        $this->publishes([
+            __DIR__ . '/../publish/Eloquent/' => app_path()
+        ], 'eloquent');
     }
 
     public function register()

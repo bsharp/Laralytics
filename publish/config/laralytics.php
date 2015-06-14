@@ -14,7 +14,7 @@ return [
     | Supported: "database", "eloquent"
     |
     */
-    'driver' => 'database',
+    'driver' => 'eloquent',
 
     /*
     |--------------------------------------------------------------------------
@@ -26,11 +26,11 @@ return [
     | default it should be a "Laralytics" model imported when publishing.
     |
     */
-    'model' => App\Laralytics::class,
+    'model' => App\LaralyticsModel::class,
 
     /*
     |--------------------------------------------------------------------------
-    | User_id method
+    | User id's retrieving method
     |--------------------------------------------------------------------------
     |
     | This callback is called to get the current user_id if a user is
