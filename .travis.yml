@@ -1,0 +1,26 @@
+language: php
+
+php:
+  - 5.5
+  - 5.6
+  - 7.0
+  - hhvm
+  - hhvm-nightly
+
+matrix:
+  allow_failures:
+  - php: hhvm
+  - php: hhvm-nightly
+
+sudo: false
+
+install: travis_retry composer install --no-interaction --prefer-source
+
+before_script:
+  - cp .env.travis .env
+
+script: vendor/bin/phpunit
+
+notifications:
+  slack:
+    secure: midSuq+hEXbHAN2NSXhkyHOfA3M04yd9ECj8QhFTy3OzWQwuEgL8iUKI86G1pCN9sxsu8xFcFF68RC8agV3rQ7gf/fZzjn7ZMx17WRPHeAyXOiRs5SMPX3NxkXO5rCgeP3g1p73BJMErIYY3fIHq/5rJq1WqeVAEGqrHr/SzhQlP7qW+1uUDuTXA+JNZrDmVMEszGBDdGCGijVdzw1ML89Pe792lzYsG7yATHfwrMPRLQA+kaAz3QUs/yvlI68Cisd3Nzc/69jcRbXl+tcvIRoDsdIlP+L4AA3v+LM+d9Nha4djAVEKwxSFWn1JG9sW7LFjWCCDdJoyaGN0DGPfuLB+DNmy4JpPscGr9+7Yabkbbd1JRnLRf49uKVOhmoscEcZ4XD/89O+/+pIOrmBeHAQ3+lN1nQK8shrfVJmgdXXhG9RWvh4RPu6i1MZvvSDEduNwLbri6J8QVDosfAjtvjj9P5K+HW3Par2cDh87ecYnod9O7W8yRoFdAO4KjC6rf0ZIsxIio77Ytgi2NfPEGhehXotZSamBpF0CdTbrv058aomKhpIGz2tLB3++tbAdFAhIuK7j8+GTnEctVhQ3pu++sSPtyRMVqS/Edt8r9vMH4/7V1i2LaqlE6NJrp4xVGTihOXPaRGoq8U6MrZ3c2j9b7RBja2kdrmd8JkWPd0ek=
