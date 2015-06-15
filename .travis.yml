@@ -5,19 +5,14 @@ php:
   - 5.6
   - 7.0
   - hhvm
-  - hhvm-nightly
 
 matrix:
   allow_failures:
   - php: hhvm
-  - php: hhvm-nightly
 
 sudo: false
 
 install: travis_retry composer install --no-interaction --prefer-source
-
-before_script:
-  - cp .env.travis .env
 
 script: vendor/bin/phpunit
 
