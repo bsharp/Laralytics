@@ -1,5 +1,10 @@
 # Laralytics
 
+[![Build Status](https://travis-ci.org/bsharp/Laralytics.svg)](https://travis-ci.org/bsharp/Laralytics)
+[![Latest Stable Version](https://poser.pugx.org/bsharp/laralytics/v/stable)](https://packagist.org/packages/bsharp/laralytics)
+[![Total Downloads](https://poser.pugx.org/bsharp/laralytics/downloads)](https://packagist.org/packages/bsharp/laralytics)
+[![License](https://poser.pugx.org/bsharp/laralytics/license)](https://packagist.org/packages/bsharp/laralytics)
+
 ## Installation
 
 #### Composer
