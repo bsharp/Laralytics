@@ -23,7 +23,8 @@ class CreateLaralyticsUrlTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->index()->nullable();
             $table->string('hash', 64)->index();
-            $table->string('url', 255);
+            $table->string('host', 255)->index();
+            $table->string('path', 255);
             $table->string('method', 10)->index();
 
             // Auto timestamp for postgreSQL and others
