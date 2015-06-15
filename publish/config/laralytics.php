@@ -11,17 +11,41 @@ return [
     | This driver manages the storage and retrieval of laralytics'
     | data in your database.
     |
-    | Supported: "database", "eloquent"
+    | Supported: "eloquent", "database", "file", "syslog", "syslogd"
     |
     */
     'driver' => 'eloquent',
 
     /*
     |--------------------------------------------------------------------------
+    | Syslog configuration
+    |--------------------------------------------------------------------------
+    |
+    | When using the "syslog" or "syslogd" driver you may want to specify
+    | the facility that Laralytics can use, as well as a remote server
+    | host and port to use with the "syslogd" driver.
+    |
+    | Supported values for facility: "LOG_ALERT", "LOG_CRIT", "LOG_ERR",
+    | "LOG_WARNING", "LOG_NOTICE", "LOG_INFO", "LOG_DEBUG", "LOG_KERN",
+    | "LOG_USER", "LOG_MAIL", "LOG_DAEMON", "LOG_AUTH", "LOG_SYSLOG",
+    | "LOG_LPR", "LOG_NEWS", "LOG_UUCP", "LOG_CRON", "LOG_AUTHPRIV",
+    | "LOG_LOCAL0", "LOG_LOCAL1", "LOG_LOCAL2", "LOG_LOCAL3", "LOG_LOCAL4",
+    | "LOG_LOCAL5", "LOG_LOCAL6", "LOG_LOCAL7"
+    */
+    'syslog' => [
+        'facility' => LOG_LOCAL0,
+        'remote' => [
+            'host' => 'localhost',
+            'port' => 514
+        ]
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Laralytics Models
     |--------------------------------------------------------------------------
     |
-    | When using the "Eloquent" laralytics driver, we need to know which
+    | When using the "eloquent" laralytics driver, we need to know which
     | Eloquent models should be used to retrieve your laralytics data.
     | By default Laravel models are in the app directory.
     |

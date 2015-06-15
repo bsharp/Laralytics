@@ -1,6 +1,10 @@
 <?php namespace Bsharp\Laralytics;
 
 use DB;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\SyslogHandler;
+use Monolog\Handler\SyslogUdpHandler;
+use Monolog\Logger;
 
 /**
  * Class Laralytics
@@ -10,6 +14,7 @@ class Laralytics
 {
     private $driver;
     private $models;
+    private $syslog;
 
     /**
      * Constructor
@@ -18,24 +23,39 @@ class Laralytics
     {
         $this->driver = config('laralytics.driver');
         $this->models = config('laralytics.models');
+        $this->syslog = config('laralytics.syslog');
     }
 
     /**
-     * Log a visited url in database.
+     * Log a visited path in database.
      *
-     * @param string $url
+     * @param string $host
+     * @param string $path
      * @param string $method
      */
-    public function url($url, $method)
+    public function url($host, $path, $method)
     {
-        $url = starts_with($url, '/') ? $url : '/' . $url;
+        $path = starts_with($path, '/') ? $path : '/' . $path;
 
-        $data = compact('url', 'method');
+        $data = compact('host', 'path', 'method');
 
-        if ($this->driverIsDatabase()) {
-            $this->insertDatabase('laralytics_url', $data);
-        } else {
-            $this->insertEloquent($this->models['url'], $data);
+
+        switch ($this->driver) {
+            case 'database':
+                $this->insertDatabase('laralytics_url', $data);
+                break;
+            case 'eloquent':
+                $this->insertEloquent($this->models['url'], $data);
+                break;
+            case 'file':
+                $this->insertFile('url', $data);
+                break;
+            case 'syslog':
+                $this->insertSyslog('url', $data);
+                break;
+            case 'syslogd':
+                $this->insertSyslogd($data);
+                break;
         }
     }
 
@@ -48,7 +68,7 @@ class Laralytics
     private function insertDatabase($table, $data)
     {
         $data['user_id'] = $this->getUserId();
-        $data['hash'] = $this->hash($data['url']);
+        $data['hash'] = $this->hash($data['host'], $data['path']);
 
         DB::table($table)->insert($data);
     }
@@ -65,13 +85,70 @@ class Laralytics
         $model = app()->make($model);
 
         $data['user_id'] = $this->getUserId();
-        $data['hash'] = $this->hash($data['url']);
+        $data['hash'] = $this->hash($data['host'], $data['path']);
 
         foreach ($data as $key => $value) {
             $model->$key = $value;
         }
 
         $model->save();
+    }
+
+    /**
+     * Insert log in a file using Monolog.
+     *
+     * @param string $type
+     * @param array $data
+     */
+    private function insertFile($type, $data)
+    {
+        $log = new Logger('laralytics');
+        $log->pushHandler(new StreamHandler(storage_path('/app/laralytics-' . $type . '.log')));
+
+        $data['user_id'] = $this->getUserId();
+        $data['hash'] = $this->hash($data['host'], $data['path']);
+        $data['created_at'] = date('Y-m-d H:i:s');
+
+        $log->info('', $data);
+    }
+
+    /**
+     * Insert log in syslog using Monolog.
+     *
+     * @param string $type
+     * @param array $data
+     */
+    private function insertSyslog($type, $data)
+    {
+        $log = new Logger('laralytics');
+        $log->pushHandler(new SyslogHandler('laralytics-' . $type, $this->syslog['facility']));
+
+        $data['user_id'] = $this->getUserId();
+        $data['hash'] = $this->hash($data['host'], $data['path']);
+        $data['created_at'] = date('Y-m-d H:i:s');
+
+        $log->info('', $data);
+    }
+
+    /**
+     * Insert log in a remote syslog using Monolog.
+     *
+     * @param array $data
+     */
+    private function insertSyslogd($data)
+    {
+        $log = new Logger('laralytics');
+        $log->pushHandler(new SyslogUdpHandler(
+            $this->syslog['remote']['host'],
+            $this->syslog['remote']['port'],
+            $this->syslog['facility']
+        ));
+
+        $data['user_id'] = $this->getUserId();
+        $data['hash'] = $this->hash($data['host'], $data['path']);
+        $data['created_at'] = date('Y-m-d H:i:s');
+
+        $log->info('', $data);
     }
 
     /**
@@ -90,24 +167,15 @@ class Laralytics
     }
 
     /**
-     * Return true if the current Laralytics driver is set to "database".
+     * Hash a path string using the md4 (fastest) hashing algorithm.
      *
-     * @return bool
-     */
-    private function driverIsDatabase()
-    {
-        return $this->driver === 'database';
-    }
-
-    /**
-     * Hash a url string using the md4 (fastest) hashing algorithm.
-     *
-     * @param $string
+     * @param $host
+     * @param $path
      *
      * @return string
      */
-    private function hash($string)
+    private function hash($host, $path)
     {
-        return hash('md4', $string);
+        return hash('md4', $host . $path);
     }
 }
