@@ -5,9 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Class CreateLaralyticsTable
+ * Class CreateLaralyticsUrlTable
  */
-class CreateLaralyticsTable extends Migration
+class CreateLaralyticsUrlTable extends Migration
 {
     /**
      * Run the migrations.
@@ -16,14 +16,15 @@ class CreateLaralyticsTable extends Migration
      */
     public function up()
     {
-        Schema::create('laralytics', function (Blueprint $table) {
+        Schema::create('laralytics_url', function (Blueprint $table) {
 
             $engine = Config::get('database.default');
 
             $table->increments('id');
             $table->integer('user_id')->index()->nullable();
-            $table->string('type')->index();
-            $table->text('meta');
+            $table->string('hash', 64)->index();
+            $table->string('url', 255);
+            $table->string('method', 10)->index();
 
             // Auto timestamp for postgreSQL and others
             if ($engine === 'pgsql') {
@@ -41,6 +42,6 @@ class CreateLaralyticsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('laralytics');
+        Schema::drop('laralytics_url');
     }
 }

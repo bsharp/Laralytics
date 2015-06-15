@@ -18,15 +18,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Laralytics Model
+    | Laralytics Models
     |--------------------------------------------------------------------------
     |
     | When using the "Eloquent" laralytics driver, we need to know which
-    | Eloquent model should be used to retrieve your laralytics data. By
-    | default it should be a "Laralytics" model imported when publishing.
+    | Eloquent models should be used to retrieve your laralytics data.
+    | By default Laravel models are in the app directory.
     |
     */
-    'model' => App\LaralyticsModel::class,
+    'models' => [
+        'url' => App\LaralyticsUrl::class,
+        'click' => App\LaralyticsClick::class,
+        'custom' => App\LaralyticsCustom::class
+    ],
 
     /*
     |--------------------------------------------------------------------------

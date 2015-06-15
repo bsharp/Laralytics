@@ -38,10 +38,7 @@ class LaralyticsMiddleware
      */
     public function handle($request, Closure $next)
     {
-        $path = $request->path();
-
-        $path = starts_with($path, '/') ? $path : '/' . $path;
-        Laralytics::log('url', ['path' => $path]);
+        Laralytics::url($request->path(), $request->method());
 
         return $next($request);
     }
