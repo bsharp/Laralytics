@@ -3,7 +3,7 @@
 <phpunit bootstrap="tests/bootstrap.php" colors="true">
     <testsuites>
         <testsuite name="Laralytics Test Suite">
-            <file>tests/laralytics/laralyticsTest.php</file>
+            <file>tests/laralytics/LaralyticsTest.php</file>
         </testsuite>
     </testsuites>
 
