@@ -1,6 +1,5 @@
 <?php namespace Bsharp\Laralytics;
 
-use DB;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -12,8 +11,19 @@ use Monolog\Logger;
  */
 class Laralytics
 {
+    /**
+     * @var string $driver
+     */
     private $driver;
+
+    /**
+     * @var array $models
+     */
     private $models;
+
+    /**
+     * @var array $syslog
+     */
     private $syslog;
 
     /**
@@ -70,7 +80,10 @@ class Laralytics
         $data['user_id'] = $this->getUserId();
         $data['hash'] = $this->hash($data['host'], $data['path']);
 
-        DB::table($table)->insert($data);
+        /** @var \Illuminate\Database\DatabaseManager $DB */
+        $DB = app()->make('Illuminate\Database\DatabaseManager');
+
+        $DB->table($table)->insert($data);
     }
 
     /**
