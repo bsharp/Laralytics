@@ -23,7 +23,7 @@ var laralytics = {
     var request = new XMLHttpRequest();
     request.open('POST', ''+ _options.API +'', true);
     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    request.setRequestHeader('X-XSRF-TOKEN', laralytics.getCookie('XSRF-TOKEN'));
+    request.setRequestHeader('X-XSRF-TOKEN', decodeURIComponent(laralytics.getCookie('XSRF-TOKEN')));
     request.send(_payLoad);
   },
 
