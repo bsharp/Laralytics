@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class LaralyticsUrl extends Model
 {
-
     protected $table = 'laralytics_url';
 
     protected $fillable = ['user_id', 'hash', 'url', 'method', 'created_at'];

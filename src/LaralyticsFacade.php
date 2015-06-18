@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Facade;
  */
 class LaralyticsFacade extends Facade
 {
-
     /**
      * Get the registered name of the component.
      *

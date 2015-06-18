@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class LaralyticsCustom extends Model
 {
-
     protected $table = 'laralytics_custom';
 
     protected $fillable = ['user_id', 'hash', 'url', 'version', 'event', 'data', 'created_at'];
