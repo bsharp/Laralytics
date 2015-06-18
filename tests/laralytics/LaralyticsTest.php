@@ -197,7 +197,7 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         // set syslog driver
         app('config')->set('laralytics.driver', 'syslogd');
         app('config')->set('laralytics.syslog.facility', LOG_LOCAL0);
-        app('config')->set('laralytics.syslog.remote',[
+        app('config')->set('laralytics.syslog.remote', [
             'host' => '127.0.0.1',
             'port' => 514
         ]);
