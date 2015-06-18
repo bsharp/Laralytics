@@ -1,4 +1,5 @@
 <?php
+
 use Bsharp\Laralytics\Laralytics;
 
 /**
@@ -59,6 +60,17 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         ];
     }
 
+    /**
+     * verify if the class is instantiated with the proper configuration parameters.
+     */
+    public function testInitialisation()
+    {
+        $instance = new Laralytics();
+
+        $this->assertAttributeEquals('eloquent', 'driver', $instance);
+        $this->assertAttributeNotEmpty('models', $instance);
+        $this->assertAttributeNotEmpty('syslog', $instance);
+    }
 
 
     /**
@@ -232,5 +244,22 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
 
         $this->assertEquals($host[1], $lineTwo['host']);
         $this->assertEquals($path[1], $lineTwo['path']);
+    }
+
+    public function testGetUserId()
+    {
+        $instance = Mockery::mock('Bsharp\Laralytics\Laralytics')->shouldAllowMockingProtectedMethods();
+
+        $instance->shouldReceive('getUserId')->once()->andReturn(0);
+    }
+
+    public function testHash()
+    {
+        $instance = Mockery::mock('Bsharp\Laralytics\Laralytics')->shouldAllowMockingProtectedMethods();
+
+        $instance->shouldReceive('hash')
+            ->once()
+            ->with('test.com', '/home')
+            ->andReturn(hash('md4', 'test.com', '/home'));
     }
 }
