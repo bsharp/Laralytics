@@ -66,7 +66,7 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
      */
     public function testUrlInsertEloquent()
     {
-        // set database driver
+        // set eloquent driver
         app('config')->set('laralytics.driver', 'eloquent');
 
         $instance = new Laralytics();
@@ -104,11 +104,11 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
     }
 
     /**
-     * Test the url method with the database driver.
+     * Test the url method with the file driver.
      */
     public function testUrlInsertFile()
     {
-        // set database driver
+        // set file driver
         app('config')->set('laralytics.driver', 'file');
 
         // Storage file
