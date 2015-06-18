@@ -12,8 +12,7 @@ var laralytics = {
       Version : _version || null,
     };
 
-    payLoad.push({'Version':options.Version});
-    console.log(payLoad);
+    payLoad.Version = options.Version;
 
     laralytics.sendPayload(payLoad, options);
   },
