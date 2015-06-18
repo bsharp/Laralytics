@@ -147,4 +147,90 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
             $this->assertEquals($path[$key], $lineArray['path']);
         }
     }
+
+    /**
+     * Test the url method with the syslog driver.
+     */
+    public function testUrlInsertSyslog()
+    {
+        // set syslog driver
+        app('config')->set('laralytics.driver', 'syslog');
+        app('config')->set('laralytics.syslog.facility', LOG_LOCAL0);
+
+        $instance = new Laralytics();
+
+        $host = [];
+        $path = [];
+
+        // First line
+        $host[0] = str_random(10);
+        $path[0] = '/' . str_random(10);
+
+        $instance->url($host[0], $path[0], 'GET');
+
+        // Second line
+        $host[1] = str_random(10);
+        $path[1] = '/' . str_random(10);
+
+        $instance->url($host[1], $path[1], 'GET');
+
+        $file = file('/var/log/syslog');
+
+        $lineTwo = end($file);
+        $lineOne = prev($file);
+
+        $lineOne = json_decode(substr($lineOne, strpos($lineOne, '{')), true);
+        $lineTwo = json_decode(substr($lineTwo, strpos($lineTwo, '{')), true);
+
+        $this->assertEquals($host[0], $lineOne['host']);
+        $this->assertEquals($path[0], $lineOne['path']);
+
+        $this->assertEquals($host[1], $lineTwo['host']);
+        $this->assertEquals($path[1], $lineTwo['path']);
+    }
+
+    /**
+     * Test the url method with the syslogd driver.
+     */
+    public function testUrlInsertSyslogd()
+    {
+        // set syslog driver
+        app('config')->set('laralytics.driver', 'syslogd');
+        app('config')->set('laralytics.syslog.facility', LOG_LOCAL0);
+        app('config')->set('laralytics.syslog.remote',[
+            'host' => '127.0.0.1',
+            'port' => 514
+        ]);
+
+        $instance = new Laralytics();
+
+        $host = [];
+        $path = [];
+
+        // First line
+        $host[0] = str_random(10);
+        $path[0] = '/' . str_random(10);
+
+        $instance->url($host[0], $path[0], 'GET');
+
+        // Second line
+        $host[1] = str_random(10);
+        $path[1] = '/' . str_random(10);
+
+        $instance->url($host[1], $path[1], 'GET');
+
+        $file = file('/var/log/syslog');
+
+        $lineTwo = end($file);
+        $lineOne = prev($file);
+
+        $lineOne = json_decode(substr($lineOne, strpos($lineOne, '{')), true);
+        $lineTwo = json_decode(substr($lineTwo, strpos($lineTwo, '{')), true);
+
+        $this->assertEquals($host[0], $lineOne['host']);
+        $this->assertEquals($path[0], $lineOne['path']);
+
+        $this->assertEquals($host[1], $lineTwo['host']);
+        $this->assertEquals($path[1], $lineTwo['path']);
+    }
 }
