@@ -50,19 +50,29 @@ class Laralytics
 
         $data = compact('host', 'path', 'method');
 
+        $this->generic_insert('url', $data);
+    }
 
+    /**
+     * Call a specific insert by laralytics driver.
+     *
+     * @param $type
+     * @param $data
+     */
+    public function generic_insert($type, $data)
+    {
         switch ($this->driver) {
             case 'database':
-                $this->insertDatabase('laralytics_url', $data);
+                $this->insertDatabase($type, $data);
                 break;
             case 'eloquent':
-                $this->insertEloquent($this->models['url'], $data);
+                $this->insertEloquent($type, $data);
                 break;
             case 'file':
-                $this->insertFile('url', $data);
+                $this->insertFile($type, $data);
                 break;
             case 'syslog':
-                $this->insertSyslog('url', $data);
+                $this->insertSyslog($type, $data);
                 break;
             case 'syslogd':
                 $this->insertSyslogd($data);
@@ -71,20 +81,12 @@ class Laralytics
     }
 
     /**
-     * Log a page payload received from javascript.
-     */
-    public function payload()
-    {
-        // @TODO
-    }
-
-    /**
      * Insert log in database using the Laravel query builder.
      *
-     * @param string $table
+     * @param string $type
      * @param array $data
      */
-    protected function insertDatabase($table, $data)
+    protected function insertDatabase($type, $data)
     {
         $data['user_id'] = $this->getUserId();
         $data['hash'] = $this->hash($data['host'], $data['path']);
@@ -92,19 +94,19 @@ class Laralytics
         /** @var \Illuminate\Database\DatabaseManager $DB */
         $DB = app()->make('Illuminate\Database\DatabaseManager');
 
-        $DB->table($table)->insert($data);
+        $DB->table('laralytics_' . $type)->insert($data);
     }
 
     /**
      * Insert log in database using a Laravel Eloquent model.
      *
-     * @param string $model
+     * @param string $type
      * @param array $data
      */
-    protected function insertEloquent($model, $data)
+    protected function insertEloquent($type, $data)
     {
         /** @var \Illuminate\Database\Eloquent\Model $model */
-        $model = app()->make($model);
+        $model = app()->make($this->models[$type]);
 
         $data['user_id'] = $this->getUserId();
         $data['hash'] = $this->hash($data['host'], $data['path']);
