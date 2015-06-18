@@ -1,5 +1,6 @@
 <?php namespace Bsharp\Laralytics;
 
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -75,7 +76,7 @@ class Laralytics
      * @param string $table
      * @param array $data
      */
-    private function insertDatabase($table, $data)
+    protected function insertDatabase($table, $data)
     {
         $data['user_id'] = $this->getUserId();
         $data['hash'] = $this->hash($data['host'], $data['path']);
@@ -92,7 +93,7 @@ class Laralytics
      * @param string $model
      * @param array $data
      */
-    private function insertEloquent($model, $data)
+    protected function insertEloquent($model, $data)
     {
         /** @var \Illuminate\Database\Eloquent\Model $model */
         $model = app()->make($model);
@@ -113,7 +114,7 @@ class Laralytics
      * @param string $type
      * @param array $data
      */
-    private function insertFile($type, $data)
+    protected function insertFile($type, $data)
     {
         $log = new Logger('laralytics');
         $log->pushHandler(new StreamHandler(storage_path('/app/laralytics-' . $type . '.log')));
@@ -131,7 +132,7 @@ class Laralytics
      * @param string $type
      * @param array $data
      */
-    private function insertSyslog($type, $data)
+    protected function insertSyslog($type, $data)
     {
         $log = new Logger('laralytics');
         $log->pushHandler(new SyslogHandler('laralytics-' . $type, $this->syslog['facility']));
@@ -169,7 +170,7 @@ class Laralytics
      *
      * @return int
      */
-    private function getUserId()
+    protected function getUserId()
     {
         /** @var \Closure $user_id_closure */
         $user_id_closure = config('laralytics.user_id');
@@ -187,7 +188,7 @@ class Laralytics
      *
      * @return string
      */
-    private function hash($host, $path)
+    protected function hash($host, $path)
     {
         return hash('md4', $host . $path);
     }
