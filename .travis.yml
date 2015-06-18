@@ -21,7 +21,8 @@ install:
 script:
   - sudo sed -i 's/#$ModLoad imudp/$ModLoad imudp/' /etc/rsyslog.conf
   - sudo sed -i 's/#$UDPServerRun 514/$UDPServerRun 514/' /etc/rsyslog.conf
-  - sudo /etc/init.d/rsyslog restart
+  - sudo service rsyslog restart
+  - sudo chmod +r /var/log/syslog
   - vendor/bin/phpunit --verbose --coverage-text
 
 notifications:
