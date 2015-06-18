@@ -71,6 +71,14 @@ class Laralytics
     }
 
     /**
+     * Log a page payload received from javascript.
+     */
+    public function payload()
+    {
+        // @TODO
+    }
+
+    /**
      * Insert log in database using the Laravel query builder.
      *
      * @param string $table
