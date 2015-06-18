@@ -117,7 +117,9 @@ class Laralytics
     protected function insertFile($type, $data)
     {
         $log = new Logger('laralytics');
-        $log->pushHandler(new StreamHandler(storage_path('/app/laralytics-' . $type . '.log')));
+        $stream = new StreamHandler(storage_path('/app/laralytics-' . $type . '.log'));
+        $stream->setFormatter(new LineFormatter("%context%\n"));
+        $log->pushHandler($stream);
 
         $data['user_id'] = $this->getUserId();
         $data['hash'] = $this->hash($data['host'], $data['path']);
@@ -135,7 +137,9 @@ class Laralytics
     protected function insertSyslog($type, $data)
     {
         $log = new Logger('laralytics');
-        $log->pushHandler(new SyslogHandler('laralytics-' . $type, $this->syslog['facility']));
+        $syslog = new SyslogHandler('laralytics-' . $type, $this->syslog['facility']);
+        $syslog->setFormatter(new LineFormatter("%context%\n"));
+        $log->pushHandler($syslog);
 
         $data['user_id'] = $this->getUserId();
         $data['hash'] = $this->hash($data['host'], $data['path']);
@@ -149,14 +153,16 @@ class Laralytics
      *
      * @param array $data
      */
-    private function insertSyslogd($data)
+    protected function insertSyslogd($data)
     {
         $log = new Logger('laralytics');
-        $log->pushHandler(new SyslogUdpHandler(
+        $syslog = new SyslogUdpHandler(
             $this->syslog['remote']['host'],
             $this->syslog['remote']['port'],
             $this->syslog['facility']
-        ));
+        );
+        $syslog->setFormatter(new LineFormatter("%context%\n"));
+        $log->pushHandler($syslog);
 
         $data['user_id'] = $this->getUserId();
         $data['hash'] = $this->hash($data['host'], $data['path']);
