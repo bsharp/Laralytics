@@ -8,8 +8,8 @@
     </testsuites>
 
     <filter>
-        <whitelist>
-            <directory suffix=".php">src/</directory>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <file>src/Laralytics.php</file>
         </whitelist>
     </filter>
 </phpunit>
