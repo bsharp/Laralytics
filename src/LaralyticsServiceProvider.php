@@ -43,6 +43,13 @@ class LaralyticsServiceProvider extends TranslationServiceProvider
         $this->publishes([
             __DIR__ . '/../publish/Eloquent/' => app_path()
         ], 'eloquent');
+
+        /**
+         * Register public js file
+         */
+        $this->publishes([
+            __DIR__ . '/../publish/public/' => public_path('js')
+        ], 'js');
     }
 
     public function register()
