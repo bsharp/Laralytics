@@ -48,7 +48,7 @@ Use the `vendor:publish` artisan command to add Laralytics js to your public dir
 To start using Laralytics add the file to your view
 
 ```
-  <script src="{{ asset('js/laralytics.js') }}"></script>
+  <script async src="{{ asset('js/laralytics.js') }}"></script>
 ```
 And finally add this line in your view with this 
 
@@ -58,14 +58,18 @@ And finally add this line in your view with this
   </script>
 ```
 
+Or add it in a js extern file 
+
+```
+  laralytics.init();
+```
+
 If you want to config you can specify those parameters
 
 ```
-  <script type="text/javascript">
-    laralytics.init({
-        API : 'your route where you want to collect your data',
-        Version : 'If you want to know with A/B testing on which page you are',
-        Limit : 'To set a limit when you want to send your data if set to 0 the data will be send when the user close his tab/browser or refresh the page'
-    });
-  </script>
+  laralytics.init({
+    API : your route where you want to collect your data,
+    Version : If you want to know with A/B testing on which page you are,
+    Limit : To set a limit when you want to send your data if set to 0 the data will be send when the user close his tab/browser or refresh the page
+  });
 ```
