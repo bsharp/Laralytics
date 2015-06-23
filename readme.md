@@ -48,7 +48,7 @@ Use the `vendor:publish` artisan command to add Laralytics js to your public dir
 To start using Laralytics add the file to your view
 
 ```
-  <script async src="{{ asset('js/laralytics.js') }}"></script>
+  <script async src="{{ asset('js/laralytics.min.js') }}"></script>
 ```
 And finally add this line in your view with this 
 
