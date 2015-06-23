@@ -60,7 +60,9 @@ var laralytics = function(){
       type: event.type,
       x: event.clientX,
       y: event.clientY,
-      date : new Date(),
+      date : Math.floor(new Date().getTime() / 1000),
+      elem : event.target.id || event.target.className || 
+          event.target.localName
     };
     x++;
     checkLength(payLoad, _finalParam);
@@ -87,6 +89,12 @@ var laralytics = function(){
     // Set first tracks of user informations
     payLoad.Version = finalParam.Version;
     payLoad.Browser = window.navigator.userAgent;
+    payLoad.Userscreen = {
+      browserWidth : window.innerWidth,
+      browserHeight : window.innerHeight,
+      deviceWidth : window.screen.width,
+      deviceHeight : window.screen.height,
+    };
 
     var elemCustom = document.querySelectorAll('[data-laralytics]');
 
@@ -101,7 +109,9 @@ var laralytics = function(){
       payLoad[nameEvent] = {
         x: event.clientX,
         y: event.clientY,
-        date : new Date(),
+        date : Math.floor(new Date().getTime() / 1000),
+        elem : event.target.id || event.target.className || 
+          event.target.localName
       };
       i++;
       checkLength(payLoad, finalParam);
