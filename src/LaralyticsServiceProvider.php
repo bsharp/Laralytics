@@ -13,8 +13,7 @@ class LaralyticsServiceProvider extends TranslationServiceProvider
     public function boot()
     {
         // Include Laralytics routes for API
-        include __DIR__ . '/../publish/routes.php';
-
+        include __DIR__ . '/routes.php';
 
         /**
          * Register publish config
