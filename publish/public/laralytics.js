@@ -74,7 +74,7 @@ var laralytics = function(){
     var request = new XMLHttpRequest();
     request.open('POST', ''+ _options.API +'', true);
     request.setRequestHeader('Content-Type', 
-      'application/x-www-form-urlencoded; charset=UTF-8');
+      'application/json; charset=UTF-8');
     request.setRequestHeader('X-XSRF-TOKEN', 
       decodeURIComponent(getCookie('XSRF-TOKEN')));
     request.send(JSON.stringify(_payLoad));
