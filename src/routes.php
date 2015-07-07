@@ -1,9 +1,10 @@
 <?php
 
-Route::post('laralytics', function (\Bsharp\Laralytics\Laralytics $laralytics) {
+Route::post('laralytics', function (\Bsharp\Laralytics\Laralytics $laralytics, Illuminate\Http\Request $request) {
 
-    dd(Input::all());
-    $laralytics->payload();
+    $payload = $request->only('infos', 'click', 'custom');
+
+    $laralytics->payload($payload);
 
     return response()->json($_POST);
 });
