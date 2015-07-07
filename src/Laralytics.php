@@ -54,6 +54,16 @@ class Laralytics
     }
 
     /**
+     * Parse and log a payload.
+     *
+     * @param $payload
+     */
+    public function payload($payload)
+    {
+        dd($payload);
+    }
+
+    /**
      * Call a specific insert by laralytics driver.
      *
      * @param $type
