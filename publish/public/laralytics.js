@@ -61,7 +61,7 @@ var laralytics = function(){
       x: event.clientX,
       y: event.clientY,
       date : Math.floor(new Date().getTime() / 1000),
-      elem : event.target.id || event.target.className || 
+      elem : event.target.id || event.target.className ||
           event.target.localName
     };
     x++;
@@ -73,9 +73,9 @@ var laralytics = function(){
 
     var request = new XMLHttpRequest();
     request.open('POST', ''+ _options.API +'', true);
-    request.setRequestHeader('Content-Type', 
+    request.setRequestHeader('Content-Type',
       'application/json; charset=UTF-8');
-    request.setRequestHeader('X-XSRF-TOKEN', 
+    request.setRequestHeader('X-XSRF-TOKEN',
       decodeURIComponent(getCookie('XSRF-TOKEN')));
     request.send(JSON.stringify(_payLoad));
   };
@@ -100,7 +100,7 @@ var laralytics = function(){
 
     for (var j = 0; j < elemCustom.length; j++){
       elemCustom[j].addEventListener(''+
-        elemCustom[j].getAttribute('data-laralytics')+'', 
+        elemCustom[j].getAttribute('data-laralytics')+'',
         custom.bind(finalParam));
     }
 
@@ -110,7 +110,7 @@ var laralytics = function(){
         x: event.clientX,
         y: event.clientY,
         date : Math.floor(new Date().getTime() / 1000),
-        elem : event.target.id || event.target.className || 
+        elem : event.target.id || event.target.className ||
           event.target.localName
       };
       i++;
