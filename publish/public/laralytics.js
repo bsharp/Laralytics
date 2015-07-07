@@ -10,11 +10,11 @@ var laralytics = function(){
   };
 
   //Object track with : screen size, mouse position, browser, all click event
-  var payLoad = {};
-
-  // Number click function
-  var i = 0;
-  var x = 0;
+  var payLoad = {
+    infos: [],
+    click: [],
+    custom: [],
+  };
 
   // Get value of a cookie
   var getCookie = function(cname) {
@@ -46,30 +46,36 @@ var laralytics = function(){
   };
 
   // Send request when a limit is set
-  var checkLength = function(_payLoad, _finalParam) {
-    if(Object.keys(_payLoad).length === _finalParam.Limit){
-      sendPayload(_payLoad, _finalParam);
-      payLoad = {};
+  var checkLength = function(_finalParam) {
+    var totalArray = payLoad.click.length + payLoad.custom.length;
+
+    if(_finalParam.Limit === 0){
+      return ;
+    }else if(totalArray === _finalParam.Limit ||
+      totalArray >= _finalParam.Limit){
+        sendPayload(_finalParam);
+        payLoad = {
+          click: [],
+          custom: [],
+        };
     }
   };
 
   // Custom click with data attributes
   var custom = function(_finalParam) {
-    var nameEvent = 'custom'+event.type + x;
-    payLoad[nameEvent] = {
+    payLoad.custom.push({
       type: event.type,
       x: event.clientX,
       y: event.clientY,
       date : Math.floor(new Date().getTime() / 1000),
       elem : event.target.id || event.target.className ||
-          event.target.localName
-    };
-    x++;
-    checkLength(payLoad, _finalParam);
+        event.target.localName
+    });
+    checkLength(_finalParam);
   };
 
   // Send payload to API
-  var sendPayload = function(_payLoad, _options) {
+  var sendPayload = function(_options) {
 
     var request = new XMLHttpRequest();
     request.open('POST', ''+ _options.API +'', true);
@@ -77,7 +83,7 @@ var laralytics = function(){
       'application/json; charset=UTF-8');
     request.setRequestHeader('X-XSRF-TOKEN',
       decodeURIComponent(getCookie('XSRF-TOKEN')));
-    request.send(JSON.stringify(_payLoad));
+    request.send(JSON.stringify(payLoad));
   };
 
   // Init laralytics to track click / custom click
@@ -87,9 +93,9 @@ var laralytics = function(){
     var finalParam = extend({}, defaultParam, customParam);
 
     // Set first tracks of user informations
-    payLoad.Version = finalParam.Version;
-    payLoad.Browser = window.navigator.userAgent;
-    payLoad.Userscreen = {
+    payLoad.infos = {
+      version: finalParam.Version,
+      browser: window.navigator.userAgent,
       browserWidth : window.innerWidth,
       browserHeight : window.innerHeight,
       deviceWidth : window.screen.width,
@@ -105,20 +111,18 @@ var laralytics = function(){
     }
 
     document.addEventListener('click', function(event){
-      var nameEvent = event.type + i;
-      payLoad[nameEvent] = {
+      payLoad.click.push({
         x: event.clientX,
         y: event.clientY,
         date : Math.floor(new Date().getTime() / 1000),
         elem : event.target.id || event.target.className ||
           event.target.localName
-      };
-      i++;
-      checkLength(payLoad, finalParam);
+      });
+      checkLength(finalParam);
     });
 
     window.onbeforeunload = function(){
-      sendPayload(payLoad, finalParam);
+      sendPayload(finalParam);
     };
   };
 
