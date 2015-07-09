@@ -11,7 +11,7 @@ var laralytics = function(){
 
   //Object track with : screen size, mouse position, browser, all click event
   var payLoad = {
-    infos: [],
+    info: [],
     click: [],
     custom: [],
   };
@@ -93,7 +93,7 @@ var laralytics = function(){
     var finalParam = extend({}, defaultParam, customParam);
 
     // Set first tracks of user informations
-    payLoad.infos = {
+    payLoad.info = {
       version: finalParam.Version,
       browser: window.navigator.userAgent,
       browserWidth : window.innerWidth,
