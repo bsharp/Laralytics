@@ -4,9 +4,22 @@ Route::post('laralytics', function (Bsharp\Laralytics\Laralytics $laralytics,
                                     Illuminate\Http\Request $request,
                                     Illuminate\Contracts\Cookie\Factory $cookie) {
 
+    $trackerCookie = null;
+
+    // Define payload
     $payload = $request->only('info', 'click', 'custom');
 
-    $laralytics->payload($request, $cookie, $payload);
+    // Check for tracking cookie if we have info in the payload
+    if (!empty($payload['info'])) {
+        $trackerCookie = $laralytics->checkCookie($request, $cookie);
+    }
 
-    return response()->json($_POST);
+    // Insert payload
+    $laralytics->payload($request, $payload, !is_null($trackerCookie));
+
+    if (is_null($trackerCookie)) {
+        return response()->json($_POST);
+    } else {
+        return response()->json($_POST)->withCookie($trackerCookie);
+    }
 });
