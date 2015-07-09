@@ -1,5 +1,7 @@
 <?php namespace Bsharp\Laralytics;
 
+use Illuminate\Contracts\Cookie\Factory;
+use Illuminate\Http\Request;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogHandler;
@@ -32,6 +34,7 @@ class Laralytics
      */
     public function __construct()
     {
+        $this->cookie = config('laralytics.cookie');
         $this->driver = config('laralytics.driver');
         $this->models = config('laralytics.models');
         $this->syslog = config('laralytics.syslog');
@@ -56,10 +59,20 @@ class Laralytics
     /**
      * Parse and log a payload.
      *
+     * @param Request $request
+     * @param Factory $cookie
      * @param $payload
      */
-    public function payload($payload)
+    public function payload(Request $request, Factory $cookie, $payload)
     {
+        // Check if the user already has the laralytics cookie
+        if ($request->cookie($this->cookie['name'])) {
+
+        } else {
+            // Create a cookie with a random content
+            $cookie->make($this->cookie['name'], md5(rand()), $this->cookie['duration']);
+        }
+
         dd($payload);
     }
 
