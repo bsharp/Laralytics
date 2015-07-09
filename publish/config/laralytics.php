@@ -18,6 +18,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Laralytics tracking cookie
+    |--------------------------------------------------------------------------
+    |
+    | Laralytics use a cookie to track a user and avoid storing multiple
+    | time the devices info of a user. you can change the cookie name and
+    | is duration (in minutes with a default value of 5 years).
+    |
+    | Caution: Keep in mind that after modifying the cookie name laralytics
+    | will loose all the previous tracker.
+    |
+    */
+    'cookie' =>[
+        'name' => 'laralytics_tracker',
+        'duration' => 2628000
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Syslog configuration
     |--------------------------------------------------------------------------
     |
