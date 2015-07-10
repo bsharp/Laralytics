@@ -84,14 +84,38 @@ class Laralytics
             $this->payloadInfo($request, $payload['info']);
         }
 
-        foreach ($payload as $key => $value) {
+        $click = $payload['click'];
+        $custom = $payload['custom'];
 
-            $data[$key]['user_id'] = $this->getUserId();
-            $data[$key]['created_at'] = date('Y-m-d H:i:s');
-            $data[$key]['hash'] = $this->hash($request->getHttpHost(), $request->path());
+        // Format click & custom
+        $this->addEventData($click, $request);
+        $this->addEventData($custom, $request);
+
+        $this->generic_insert('click', $click);
+        $this->generic_insert('custom', $custom);
+    }
+
+    /**
+     * @param $array
+     * @param Request $request
+     */
+    private function addEventData(&$array, Request $request)
+    {
+        foreach ($array as $key => $value) {
+            $array[$key]['user_id'] = $this->getUserId();
+
+            // If we don't have a user ID we replace it with a session token
+            if ($array[$key]['user_id'] === null) {
+                $array[$key]['session'] = $request->cookie($this->cookie['session']);
+            }
+
+            $array[$key]['hash'] = $this->hash($request->getHttpHost(), $request->path());
+
+            // @TODO: Format date using carbon here
+            unset($array[$key]['datetime']);
+
+            $array[$key]['created_at'] = date('Y-m-d H:i:s');
         }
-
-        dd($payload);
     }
 
     /**
@@ -127,6 +151,12 @@ class Laralytics
         }
 
         $info['user_id'] = $this->getUserId();
+
+        // If we don't have a user ID we replace it with a session token
+        if ($info['user_id'] === null) {
+            $info['session'] = $request->cookie($this->cookie['session']);
+        }
+
         $info['created_at'] = date('Y-m-d H:i:s');
         $info['session'] = $request->cookie($this->cookie['session']);
 
@@ -185,11 +215,14 @@ class Laralytics
         /** @var \Illuminate\Database\Eloquent\Model $model */
         $model = app()->make($this->models[$type]);
 
-        foreach ($data as $key => $value) {
-            $model->$key = $value;
+        if (isset($data[0]) and is_array($data[0])) {
+            $model->insert($data);
+        } else {
+            foreach ($data as $key => $value) {
+                $model->$key = $value;
+            }
+            $model->save();
         }
-
-        $model->save();
     }
 
     /**
