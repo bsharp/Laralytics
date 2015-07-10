@@ -67,7 +67,7 @@ var laralytics = function(){
       type: event.type,
       x: event.clientX,
       y: event.clientY,
-      date : Math.floor(new Date().getTime() / 1000),
+      datetime : Math.floor(new Date().getTime() / 1000),
       elem : event.target.id || event.target.className ||
         event.target.localName
     });
@@ -114,7 +114,7 @@ var laralytics = function(){
       payLoad.click.push({
         x: event.clientX,
         y: event.clientY,
-        date : Math.floor(new Date().getTime() / 1000),
+        datetime : Math.floor(new Date().getTime() / 1000),
         elem : event.target.id || event.target.className ||
           event.target.localName
       });
