@@ -68,7 +68,7 @@ var laralytics = function(){
       x: event.clientX,
       y: event.clientY,
       datetime : Math.floor(new Date().getTime() / 1000),
-      elem : event.target.id || event.target.className ||
+      element : event.target.id || event.target.className ||
         event.target.localName
     });
     checkLength(_finalParam);
@@ -115,7 +115,7 @@ var laralytics = function(){
         x: event.clientX,
         y: event.clientY,
         datetime : Math.floor(new Date().getTime() / 1000),
-        elem : event.target.id || event.target.className ||
+        element : event.target.id || event.target.className ||
           event.target.localName
       });
       checkLength(finalParam);
