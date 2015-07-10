@@ -35,6 +35,8 @@ class Laralytics
     public function __construct()
     {
         $this->cookie = config('laralytics.cookie');
+        $this->cookie['session'] = config('session.cookie');
+
         $this->driver = config('laralytics.driver');
         $this->models = config('laralytics.models');
         $this->syslog = config('laralytics.syslog');
@@ -60,20 +62,63 @@ class Laralytics
      * Parse and log a payload.
      *
      * @param Request $request
-     * @param Factory $cookie
      * @param $payload
+     * @param bool $insertInfo
      */
-    public function payload(Request $request, Factory $cookie, $payload)
+    public function payload(Request $request, array $payload, $insertInfo = false)
     {
-        // Check if the user already has the laralytics cookie
-        if ($request->cookie($this->cookie['name'])) {
+        // Insert user info if needed
+        if ($insertInfo) {
+            $this->payloadInfo($request, $payload['info']);
+        }
 
-        } else {
-            // Create a cookie with a random content
-            $cookie->make($this->cookie['name'], md5(rand()), $this->cookie['duration']);
+        foreach ($payload as $key => $value) {
+
+            $data[$key]['user_id'] = $this->getUserId();
+            $data[$key]['created_at'] = date('Y-m-d H:i:s');
+            $data[$key]['hash'] = $this->hash($request->getHttpHost(), $request->path());
         }
 
         dd($payload);
+    }
+
+    /**
+     * Check if the current user already has a Laralytics tracking cookie.
+     *
+     * @param Request $request
+     * @param Factory $cookie
+     *
+     * @return \Symfony\Component\HttpFoundation\Cookie|null
+     */
+    public function checkCookie(Request $request, Factory $cookie)
+    {
+        // if the user don't have the cookie we create it
+        if (!$request->cookie($this->cookie['name'])) {
+            return $cookie->make($this->cookie['name'], md5(rand()), $this->cookie['duration']);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param Request $request
+     * @param array $userInfo
+     */
+    private function payloadInfo(Request $request, array $userInfo)
+    {
+        // @TODO: use Laravel validation to valideate user input here
+
+        $info = [];
+
+        foreach ($userInfo as $key => $value) {
+            $info[snake_case($key)] = $value;
+        }
+
+        $info['user_id'] = $this->getUserId();
+        $info['created_at'] = date('Y-m-d H:i:s');
+        $info['session'] = $request->cookie($this->cookie['session']);
+
+        $this->generic_insert('info', $info);
     }
 
     /**
@@ -111,9 +156,6 @@ class Laralytics
      */
     protected function insertDatabase($type, $data)
     {
-        $data['user_id'] = $this->getUserId();
-        $data['hash'] = $this->hash($data['host'], $data['path']);
-
         /** @var \Illuminate\Database\DatabaseManager $DB */
         $DB = app()->make('Illuminate\Database\DatabaseManager');
 
@@ -130,9 +172,6 @@ class Laralytics
     {
         /** @var \Illuminate\Database\Eloquent\Model $model */
         $model = app()->make($this->models[$type]);
-
-        $data['user_id'] = $this->getUserId();
-        $data['hash'] = $this->hash($data['host'], $data['path']);
 
         foreach ($data as $key => $value) {
             $model->$key = $value;
@@ -154,10 +193,6 @@ class Laralytics
         $stream->setFormatter(new LineFormatter("%context%\n"));
         $log->pushHandler($stream);
 
-        $data['user_id'] = $this->getUserId();
-        $data['hash'] = $this->hash($data['host'], $data['path']);
-        $data['created_at'] = date('Y-m-d H:i:s');
-
         $log->info('', $data);
     }
 
@@ -174,9 +209,6 @@ class Laralytics
         $syslog->setFormatter(new LineFormatter("%context%\n"));
         $log->pushHandler($syslog);
 
-        $data['user_id'] = $this->getUserId();
-        $data['hash'] = $this->hash($data['host'], $data['path']);
-        $data['created_at'] = date('Y-m-d H:i:s');
 
         $log->info('', $data);
     }
@@ -197,9 +229,6 @@ class Laralytics
         $syslog->setFormatter(new LineFormatter("%context%\n"));
         $log->pushHandler($syslog);
 
-        $data['user_id'] = $this->getUserId();
-        $data['hash'] = $this->hash($data['host'], $data['path']);
-        $data['created_at'] = date('Y-m-d H:i:s');
 
         $log->info('', $data);
     }
