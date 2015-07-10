@@ -257,7 +257,7 @@ class Laralytics
         $user_id = $user_id_closure();
 
         // Sanitize value
-        return $user_id  === null ? 0 : $user_id;
+        return $user_id  == 0 ? null : $user_id;
     }
 
     /**
