@@ -30,7 +30,7 @@ return [
     |
     */
     'cookie' =>[
-        'name' => 'laralytics_tracker',
+        'name'     => 'laralytics_tracker',
         'duration' => 2628000
     ],
 
@@ -52,7 +52,7 @@ return [
     */
     'syslog' => [
         'facility' => LOG_LOCAL0,
-        'remote' => [
+        'remote'   => [
             'host' => 'localhost',
             'port' => 514
         ]
@@ -69,9 +69,10 @@ return [
     |
     */
     'models' => [
-        'url' => App\LaralyticsUrl::class,
-        'click' => App\LaralyticsClick::class,
-        'custom' => App\LaralyticsCustom::class
+        'url'    => App\LaralyticsUrl::class,
+        'click'  => App\LaralyticsClick::class,
+        'custom' => App\LaralyticsCustom::class,
+        'info'   => App\LaralyticsInfo::class,
     ],
 
     /*
