@@ -29,6 +29,7 @@ class CreateLaralyticsClickTable extends Migration
             $table->string('version', 255)->index()->nullable();
             $table->integer('x');
             $table->integer('y');
+            $table->string('element', 255)->index()->nullable();
 
             // Auto timestamp for postgreSQL and others
             if ($engine === 'pgsql') {
