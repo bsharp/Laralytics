@@ -17,9 +17,7 @@ Route::post('laralytics', function (Bsharp\Laralytics\Laralytics $laralytics,
     // Insert payload
     $laralytics->payload($request, $payload, !is_null($trackerCookie));
 
-    if (is_null($trackerCookie)) {
-        return response()->json($_POST);
-    } else {
-        return response()->json($_POST)->withCookie($trackerCookie);
+    if (!is_null($trackerCookie)) {
+        return response()->json()->withCookie($trackerCookie);
     }
 });
