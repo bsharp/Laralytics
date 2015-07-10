@@ -38,7 +38,7 @@ class LaralyticsMiddleware
      */
     public function handle($request, Closure $next)
     {
-        Laralytics::url($request->getHttpHost(), $request->path(), $request->method());
+        Laralytics::url($request);
 
         return $next($request);
     }

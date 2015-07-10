@@ -45,15 +45,27 @@ class Laralytics
     /**
      * Log a visited path in database.
      *
-     * @param string $host
-     * @param string $path
-     * @param string $method
+     * @param Request $request
      */
-    public function url($host, $path, $method)
+    public function url(Request $request)
     {
+        $host = $request->getHttpHost();
+        $method = $request->method();
+
+        $path = $request->path();
         $path = starts_with($path, '/') ? $path : '/' . $path;
 
         $data = compact('host', 'path', 'method');
+
+        $data['user_id'] = $this->getUserId();
+
+        // If we don't have a user ID we replace it with a session token
+        if ($data['user_id'] === null) {
+            $data['session'] = $request->cookie($this->cookie['session']);
+        }
+
+        $data['hash'] = $this->hash($data['host'], $data['path']);
+        $data['created_at'] = date('Y-m-d H:i:s');
 
         $this->generic_insert('url', $data);
     }
