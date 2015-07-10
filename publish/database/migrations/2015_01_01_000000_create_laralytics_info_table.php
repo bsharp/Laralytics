@@ -22,7 +22,7 @@ class CreateLaralyticsInfoTable extends Migration
 
             $table->increments('id');
             $table->integer('user_id')->index()->nullable();
-            $table->string('version');
+            $table->string('version')->index()->nullable();
             $table->string('session', 250);
             $table->string('browser');
             $table->integer('browser_width');

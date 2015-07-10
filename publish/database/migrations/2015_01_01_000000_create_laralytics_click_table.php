@@ -25,7 +25,7 @@ class CreateLaralyticsClickTable extends Migration
             $table->string('hash', 64)->index();
             $table->string('host', 255)->index();
             $table->string('path', 255);
-            $table->string('version', 255)->index();
+            $table->string('version', 255)->index()->nullable();
             $table->integer('x');
             $table->integer('y');
 

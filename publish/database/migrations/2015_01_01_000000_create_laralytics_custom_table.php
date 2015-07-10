@@ -25,7 +25,7 @@ class CreateLaralyticsCustomTable extends Migration
             $table->string('hash', 64)->index();
             $table->string('host', 255)->index();
             $table->string('path', 255);
-            $table->string('version', 255)->index();
+            $table->string('version', 255)->index()->nullable();
             $table->string('event', 64)->index();
             $table->string('element', 255)->index();
             $table->text('data');
