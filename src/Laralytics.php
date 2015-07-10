@@ -171,6 +171,10 @@ class Laralytics
      */
     public function generic_insert($type, $data)
     {
+        if (empty($data)) {
+            return;
+        }
+
         switch ($this->driver) {
             case 'database':
                 $this->insertDatabase($type, $data);
