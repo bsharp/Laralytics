@@ -1,5 +1,6 @@
 <?php namespace Bsharp\Laralytics;
 
+use Carbon\Carbon;
 use Illuminate\Contracts\Cookie\Factory;
 use Illuminate\Http\Request;
 use Monolog\Formatter\LineFormatter;
@@ -30,6 +31,11 @@ class Laralytics
     private $syslog;
 
     /**
+     * @var string $ timezone
+     */
+    private $timezone;
+
+    /**
      * Constructor
      */
     public function __construct()
@@ -40,6 +46,8 @@ class Laralytics
         $this->driver = config('laralytics.driver');
         $this->models = config('laralytics.models');
         $this->syslog = config('laralytics.syslog');
+
+        $this->timezone = config('app.timezone');
     }
 
     /**
@@ -102,6 +110,7 @@ class Laralytics
     private function addEventData(&$array, Request $request)
     {
         foreach ($array as $key => $value) {
+
             $array[$key]['user_id'] = $this->getUserId();
 
             // If we don't have a user ID we replace it with a session token
@@ -111,10 +120,14 @@ class Laralytics
 
             $array[$key]['hash'] = $this->hash($request->getHttpHost(), $request->path());
 
-            // @TODO: Format date using carbon here
-            unset($array[$key]['datetime']);
+            $jsTime = Carbon::createFromTimestamp($array[$key]['datetime']);
+            $time = Carbon::now($this->timezone);
 
-            $array[$key]['created_at'] = date('Y-m-d H:i:s');
+            $time->minute = $jsTime->minute;
+            $time->second = $jsTime->second;
+
+            $array[$key]['created_at'] = $time->toDateTimeString();
+            unset($array[$key]['datetime']);
         }
     }
 
@@ -226,8 +239,7 @@ class Laralytics
                 $model->$key = $value;
             }
             $model->save();
-        }
-    }
+        }    }
 
     /**
      * Insert log in a file using Monolog.
