@@ -1,8 +1,6 @@
 <?php
 
-Route::post('laralytics', function (Bsharp\Laralytics\Laralytics $laralytics,
-                                    Illuminate\Http\Request $request,
-                                    Illuminate\Contracts\Cookie\Factory $cookie) {
+Route::post('laralytics', function (Bsharp\Laralytics\Laralytics $laralytics, Illuminate\Http\Request $request) {
 
     $trackerCookie = null;
 
@@ -11,7 +9,7 @@ Route::post('laralytics', function (Bsharp\Laralytics\Laralytics $laralytics,
 
     // Check for tracking cookie if we have info in the payload
     if (!empty($payload['info'])) {
-        $trackerCookie = $laralytics->checkCookie($request, $cookie);
+        $trackerCookie = $laralytics->checkCookie($request);
     }
 
     // Insert payload
@@ -20,4 +18,5 @@ Route::post('laralytics', function (Bsharp\Laralytics\Laralytics $laralytics,
     if (!is_null($trackerCookie)) {
         return response()->json()->withCookie($trackerCookie);
     }
+
 });

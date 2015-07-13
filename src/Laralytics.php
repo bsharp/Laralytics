@@ -1,7 +1,6 @@
 <?php namespace Bsharp\Laralytics;
 
 use Carbon\Carbon;
-use Illuminate\Contracts\Cookie\Factory;
 use Illuminate\Http\Request;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
@@ -135,12 +134,13 @@ class Laralytics
      * Check if the current user already has a Laralytics tracking cookie.
      *
      * @param Request $request
-     * @param Factory $cookie
      *
      * @return \Symfony\Component\HttpFoundation\Cookie|null
      */
-    public function checkCookie(Request $request, Factory $cookie)
+    public function checkCookie(Request $request)
     {
+        $cookie = app()->make('Illuminate\Contracts\Cookie\Factory');
+
         // if the user don't have the cookie we create it
         if (!$request->cookie($this->cookie['name'])) {
             return $cookie->make($this->cookie['name'], md5(rand()), $this->cookie['duration']);
