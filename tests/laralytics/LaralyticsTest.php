@@ -1,5 +1,6 @@
 <?php
 
+use App\LaralyticsUrl;
 use Bsharp\Laralytics\Laralytics;
 
 /**
@@ -82,16 +83,18 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         app('config')->set('laralytics.driver', 'eloquent');
 
         $instance = new Laralytics();
+        $uri = str_random(10);
 
-        $host = str_random(10);
-        $path = '/' . str_random(10);
+        /** @var \Illuminate\Http\Request $request */
+        $request = app()->make('Illuminate\Http\Request');
+        $request = $request::create($uri, 'GET');
 
-        $instance->url($host, $path, 'GET');
+        $instance->url($request);
 
-        $row = \App\LaralyticsUrl::orderBy('id', 'DESC')->first();
+        $row = LaralyticsUrl::orderBy('id', 'DESC')->first();
 
-        $this->assertEquals($host, $row->host);
-        $this->assertEquals($path, $row->path);
+        $this->assertEquals('localhost', $row->host);
+        $this->assertEquals('/' . $uri, $row->path);
     }
 
     /**
@@ -103,16 +106,18 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         app('config')->set('laralytics.driver', 'database');
 
         $instance = new Laralytics();
+        $uri = str_random(10);
 
-        $host = str_random(10);
-        $path = '/' . str_random(10);
+        /** @var \Illuminate\Http\Request $request */
+        $request = app()->make('Illuminate\Http\Request');
+        $request = $request::create($uri, 'GET');
 
-        $instance->url($host, $path, 'GET');
+        $instance->url($request);
 
         $row = \DB::table('laralytics_url')->orderBy('id', 'DESC')->first();
 
-        $this->assertEquals($host, $row->host);
-        $this->assertEquals($path, $row->path);
+        $this->assertEquals('localhost', $row->host);
+        $this->assertEquals('/' . $uri, $row->path);
     }
 
     /**
@@ -132,21 +137,21 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         }
 
         $instance = new Laralytics();
+        $uri = [];
+        $uri[0] = str_random(10);
+        $uri[1] = str_random(10);
 
-        $host = [];
-        $path = [];
+        /**
+         * @var \Illuminate\Http\Request $request
+         * @var \Illuminate\Http\Request $request_one
+         * @var \Illuminate\Http\Request $request_two
+         */
+        $request = app()->make('Illuminate\Http\Request');
+        $request_one = $request::create($uri[0], 'GET');
+        $request_two = $request::create($uri[1], 'GET');
 
-        // First line
-        $host[0] = str_random(10);
-        $path[0] = '/' . str_random(10);
-
-        $instance->url($host[0], $path[0], 'GET');
-
-        // Second line
-        $host[1] = str_random(10);
-        $path[1] = '/' . str_random(10);
-
-        $instance->url($host[1], $path[1], 'GET');
+        $instance->url($request_one);
+        $instance->url($request_two);
 
         $file = file($storageFile);
 
@@ -155,8 +160,8 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         foreach ($file as $key => $line) {
             $lineArray = json_decode($line, true);
 
-            $this->assertEquals($host[$key], $lineArray['host']);
-            $this->assertEquals($path[$key], $lineArray['path']);
+            $this->assertEquals('localhost', $lineArray['host']);
+            $this->assertEquals('/' . $uri[$key], $lineArray['path']);
         }
     }
 
@@ -170,35 +175,42 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         app('config')->set('laralytics.syslog.facility', LOG_LOCAL0);
 
         $instance = new Laralytics();
+        $uri = [];
+        $uri[0] = str_random(10);
+        $uri[1] = str_random(10);
 
-        $host = [];
-        $path = [];
+        /**
+         * @var \Illuminate\Http\Request $request
+         * @var \Illuminate\Http\Request $request_one
+         * @var \Illuminate\Http\Request $request_two
+         */
+        $request = app()->make('Illuminate\Http\Request');
+        $request_one = $request::create($uri[0], 'GET');
+        $request_two = $request::create($uri[1], 'GET');
 
-        // First line
-        $host[0] = str_random(10);
-        $path[0] = '/' . str_random(10);
-
-        $instance->url($host[0], $path[0], 'GET');
-
-        // Second line
-        $host[1] = str_random(10);
-        $path[1] = '/' . str_random(10);
-
-        $instance->url($host[1], $path[1], 'GET');
+        $instance->url($request_one);
+        $instance->url($request_two);
 
         $file = file('/var/log/syslog');
+        $file = array_reverse($file);
+        $lines = [];
 
-        $lineTwo = end($file);
-        $lineOne = prev($file);
+        foreach ($file as $line) {
 
-        $lineOne = json_decode(substr($lineOne, strpos($lineOne, '{')), true);
-        $lineTwo = json_decode(substr($lineTwo, strpos($lineTwo, '{')), true);
+            if (count($lines) === 2) {
+                break;
+            }
 
-        $this->assertEquals($host[0], $lineOne['host']);
-        $this->assertEquals($path[0], $lineOne['path']);
+            if (strpos($line, 'laralytics-url') > -1) {
+                $lines[] = json_decode(substr($line, strpos($line, '{')), true);
+            }
+        }
 
-        $this->assertEquals($host[1], $lineTwo['host']);
-        $this->assertEquals($path[1], $lineTwo['path']);
+        $this->assertEquals('localhost', $lines[0]['host']);
+        $this->assertEquals('/' . $uri[1], $lines[0]['path']);
+
+        $this->assertEquals('localhost', $lines[1]['host']);
+        $this->assertEquals('/' . $uri[0], $lines[1]['path']);
     }
 
     /**
@@ -215,35 +227,42 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         ]);
 
         $instance = new Laralytics();
+        $uri = [];
+        $uri[0] = str_random(10);
+        $uri[1] = str_random(10);
 
-        $host = [];
-        $path = [];
+        /**
+         * @var \Illuminate\Http\Request $request
+         * @var \Illuminate\Http\Request $request_one
+         * @var \Illuminate\Http\Request $request_two
+         */
+        $request = app()->make('Illuminate\Http\Request');
+        $request_one = $request::create($uri[0], 'GET');
+        $request_two = $request::create($uri[1], 'GET');
 
-        // First line
-        $host[0] = str_random(10);
-        $path[0] = '/' . str_random(10);
-
-        $instance->url($host[0], $path[0], 'GET');
-
-        // Second line
-        $host[1] = str_random(10);
-        $path[1] = '/' . str_random(10);
-
-        $instance->url($host[1], $path[1], 'GET');
+        $instance->url($request_one);
+        $instance->url($request_two);
 
         $file = file('/var/log/syslog');
+        $file = array_reverse($file);
+        $lines = [];
 
-        $lineTwo = end($file);
-        $lineOne = prev($file);
+        foreach ($file as $line) {
 
-        $lineOne = json_decode(substr($lineOne, strpos($lineOne, '{')), true);
-        $lineTwo = json_decode(substr($lineTwo, strpos($lineTwo, '{')), true);
+            if (count($lines) === 2) {
+                break;
+            }
 
-        $this->assertEquals($host[0], $lineOne['host']);
-        $this->assertEquals($path[0], $lineOne['path']);
+            if (strpos($line, '{"host"') > -1) {
+                $lines[] = json_decode(substr($line, strpos($line, '{')), true);
+            }
+        }
 
-        $this->assertEquals($host[1], $lineTwo['host']);
-        $this->assertEquals($path[1], $lineTwo['path']);
+        $this->assertEquals('localhost', $lines[0]['host']);
+        $this->assertEquals('/' . $uri[1], $lines[0]['path']);
+
+        $this->assertEquals('localhost', $lines[1]['host']);
+        $this->assertEquals('/' . $uri[0], $lines[1]['path']);
     }
 
     public function testGetUserId()
