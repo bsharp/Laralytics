@@ -239,7 +239,8 @@ class Laralytics
                 $model->$key = $value;
             }
             $model->save();
-        }    }
+        }
+    }
 
     /**
      * Insert log in a file using Monolog.
