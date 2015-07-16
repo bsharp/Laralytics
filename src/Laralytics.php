@@ -117,7 +117,12 @@ class Laralytics
                 $array[$key]['session'] = $request->cookie($this->cookie['session']);
             }
 
-            $array[$key]['hash'] = $this->hash($request->getHttpHost(), $request->path());
+            $host = $request->getHttpHost();
+            $path = $request->path();
+
+            $array[$key]['host'] = $host;
+            $array[$key]['path'] = $path;
+            $array[$key]['hash'] = $this->hash($host, $path);
 
             $jsTime = Carbon::createFromTimestamp($array[$key]['datetime']);
             $time = Carbon::now($this->timezone);
@@ -182,7 +187,7 @@ class Laralytics
      * @param $type
      * @param $data
      */
-    public function generic_insert($type, $data)
+    private function generic_insert($type, $data)
     {
         if (empty($data)) {
             return;
