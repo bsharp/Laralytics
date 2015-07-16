@@ -12,7 +12,7 @@ class LaralyticsInfo extends Model
 {
     protected $table = 'laralytics_info';
 
-    protected $fillable = ['user_id', 'version', 'session', 'browser', 'browser_width', 'browser_height',
+    protected $fillable = ['user_id', 'session', 'version', 'browser', 'browser_width', 'browser_height',
         'device_height', 'device_width', 'created_at'];
 
     /**
