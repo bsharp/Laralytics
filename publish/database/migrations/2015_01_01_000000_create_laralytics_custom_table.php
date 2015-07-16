@@ -28,8 +28,9 @@ class CreateLaralyticsCustomTable extends Migration
             $table->string('path', 255);
             $table->string('version', 255)->index()->nullable();
             $table->string('event', 64)->index();
+            $table->integer('x');
+            $table->integer('y');
             $table->string('element', 255)->index()->nullable();
-            $table->text('data');
 
             // Auto timestamp for postgreSQL and others
             if ($engine === 'pgsql') {
