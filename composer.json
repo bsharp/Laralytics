@@ -25,7 +25,8 @@
         "classmap": [
         ],
         "psr-4": {
-            "Bsharp\\Laralytics\\": "src/"
+            "Bsharp\\Laralytics\\": "src/",
+            "App\\": "publish/Eloquent/"
         }
     },
     "minimum-stability": "stable"
