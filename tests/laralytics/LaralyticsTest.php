@@ -1,5 +1,6 @@
 <?php
 
+use App\LaralyticsInfo;
 use App\LaralyticsUrl;
 use Bsharp\Laralytics\Laralytics;
 
@@ -31,8 +32,6 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
      * Define environment setup.
      *
      * @param  \Illuminate\Foundation\Application  $app
-     *
-     * @return void
      */
     protected function getEnvironmentSetUp($app)
     {
@@ -69,10 +68,10 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         $instance = new Laralytics();
 
         $this->assertAttributeEquals('eloquent', 'driver', $instance);
-        $this->assertAttributeNotEmpty('models', $instance);
+        $this->assertAttributeNotEmpty('cookie', $instance);
         $this->assertAttributeNotEmpty('syslog', $instance);
+        $this->assertAttributeNotEmpty('models', $instance);
     }
-
 
     /**
      * Test the url method with the eloquent driver.
@@ -114,7 +113,7 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
 
         $instance->url($request);
 
-        $row = \DB::table('laralytics_url')->orderBy('id', 'DESC')->first();
+        $row = DB::table('laralytics_url')->orderBy('id', 'DESC')->first();
 
         $this->assertEquals('localhost', $row->host);
         $this->assertEquals('/' . $uri, $row->path);
@@ -263,6 +262,200 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
 
         $this->assertEquals('localhost', $lines[1]['host']);
         $this->assertEquals('/' . $uri[0], $lines[1]['path']);
+    }
+
+    /**
+     * Generate a random payload to test insertion.
+     *
+     * @return array
+     */
+    private function getSamplePayload()
+    {
+        $clicks = [];
+        $customs = [];
+
+        $nb_clicks = rand(2, 10);
+        $nb_customs = rand(2, 10);
+
+        for ($i = 0; $i < $nb_clicks; $i++) {
+            $clicks[] = [
+                'x' => rand(800, 1920),
+                'y' => rand(600, 1080),
+                'datetime' => time(),
+                'element' => str_random(10)
+            ];
+        }
+
+        for ($i = 0; $i < $nb_customs; $i++) {
+            $customs[] = [
+                'event' => str_random(5),
+                'x' => rand(800, 1920),
+                'y' => rand(600, 1080),
+                'datetime' => time(),
+                'element' => str_random(10)
+            ];
+        }
+
+        return [
+            'info' => [
+                'version' => str_random(10),
+                'browser' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML,
+                like Gecko) Chrome/43.0.2357.130 Safari/537.36',
+                'browserWidth' => rand(800, 1920),
+                'browserHeight' => rand(600, 1080),
+                'deviceWidth' => rand(800, 1920),
+                'deviceHeight' => rand(600, 1080),
+            ],
+            'click' => $clicks,
+            'custom' => $customs
+        ];
+    }
+
+    /**
+     * Test payload method with the eloquent driver.
+     */
+    public function testPayloadInsertEloquent()
+    {
+        // set eloquent driver
+        app('config')->set('laralytics.driver', 'eloquent');
+
+        $instance = new Laralytics();
+        $payload = $this->getSamplePayload();
+
+        /** @var \Illuminate\Http\Request $request */
+        $request = app()->make('Illuminate\Http\Request');
+        $request = $request::create(str_random(5), 'GET');
+
+        $instance->payload($request, $payload, true);
+
+        $rowInfo = LaralyticsInfo::orderBy('id', 'DESC')->first();
+
+        $this->assertEquals($payload['info']['version'], $rowInfo->version);
+        $this->assertEquals($payload['info']['browserWidth'], $rowInfo->browser_width);
+        $this->assertEquals($payload['info']['browserHeight'], $rowInfo->browser_height);
+        $this->assertEquals($payload['info']['deviceWidth'], $rowInfo->device_width);
+        $this->assertEquals($payload['info']['deviceHeight'], $rowInfo->device_height);
+
+        /** @var \Illuminate\Support\Collection $rowClick */
+        $rowClick = \App\LaralyticsClick::orderBy('id', 'DESC')->take(count($payload['click']))->get();
+        $rowClick = $rowClick->reverse();
+
+        foreach ($rowClick as $key => $click) {
+            $this->assertEquals($payload['click'][$key]['x'], $click->x);
+            $this->assertEquals($payload['click'][$key]['y'], $click->y);
+            $this->assertEquals($payload['click'][$key]['element'], $click->element);
+        }
+
+        /** @var \Illuminate\Support\Collection $rowCustom */
+        $rowCustom = \App\LaralyticsCustom::orderBy('id', 'DESC')->take(count($payload['custom']))->get();
+        $rowCustom = $rowCustom->reverse();
+
+        foreach ($rowCustom as $key => $custom) {
+            $this->assertEquals($payload['custom'][$key]['x'], $custom->x);
+            $this->assertEquals($payload['custom'][$key]['y'], $custom->y);
+            $this->assertEquals($payload['custom'][$key]['element'], $custom->element);
+        }
+    }
+
+    /**
+     * Test payload method with the database driver.
+     */
+    public function testPayloadInsertDatabase()
+    {
+        // set eloquent driver
+        app('config')->set('laralytics.driver', 'database');
+
+        $instance = new Laralytics();
+        $payload = $this->getSamplePayload();
+
+        /** @var \Illuminate\Http\Request $request */
+        $request = app()->make('Illuminate\Http\Request');
+        $request = $request::create(str_random(5), 'GET');
+
+        $instance->payload($request, $payload, true);
+
+        $rowInfo = DB::table('laralytics_info')->orderBy('id', 'DESC')->first();
+
+        $this->assertEquals($payload['info']['version'], $rowInfo->version);
+        $this->assertEquals($payload['info']['browserWidth'], $rowInfo->browser_width);
+        $this->assertEquals($payload['info']['browserHeight'], $rowInfo->browser_height);
+        $this->assertEquals($payload['info']['deviceWidth'], $rowInfo->device_width);
+        $this->assertEquals($payload['info']['deviceHeight'], $rowInfo->device_height);
+
+        $rowClick = DB::table('laralytics_click')->orderBy('id', 'DESC')->take(count($payload['click']))->get();
+        $rowClick = array_reverse($rowClick);
+
+        foreach ($rowClick as $key => $click) {
+            $this->assertEquals($payload['click'][$key]['x'], $click->x);
+            $this->assertEquals($payload['click'][$key]['y'], $click->y);
+            $this->assertEquals($payload['click'][$key]['element'], $click->element);
+        }
+
+        $rowCustom = DB::table('laralytics_custom')->orderBy('id', 'DESC')->take(count($payload['custom']))->get();
+        $rowCustom = array_reverse($rowCustom);
+
+        foreach ($rowCustom as $key => $custom) {
+            $this->assertEquals($payload['custom'][$key]['x'], $custom->x);
+            $this->assertEquals($payload['custom'][$key]['y'], $custom->y);
+            $this->assertEquals($payload['custom'][$key]['element'], $custom->element);
+        }
+    }
+
+    /**
+     * Test the url method with the file driver.
+     */
+    public function testPayloadInsertFile()
+    {
+        // set file driver
+        app('config')->set('laralytics.driver', 'file');
+
+        // Storage file
+        $infoStorageFile = storage_path('app/laralytics-info.log');
+        $clickStorageFile = storage_path('app/laralytics-click.log');
+        $customStorageFile = storage_path('app/laralytics-custom.log');
+
+        // Delete already existing log file
+        if (file_exists($infoStorageFile)) {
+            unlink($infoStorageFile);
+        }
+
+        if (file_exists($clickStorageFile)) {
+            unlink($clickStorageFile);
+        }
+
+        if (file_exists($customStorageFile)) {
+            unlink($customStorageFile);
+        }
+
+        $instance = new Laralytics();
+        $payload = $this->getSamplePayload();
+
+        /** @var \Illuminate\Http\Request $request */
+        $request = app()->make('Illuminate\Http\Request');
+        $request = $request::create(str_random(5), 'GET');
+
+        $instance->payload($request, $payload, true);
+
+        $infoData = file($infoStorageFile);
+        $this->assertEquals(1, count($infoData));
+        $info = json_decode(array_shift($info), true);
+
+        $this->assertEquals($payload['info']['version'], $info['version']);
+        $this->assertEquals($payload['info']['browserWidth'], $info['browser_width']);
+        $this->assertEquals($payload['info']['browserHeight'], $info['browser_height']);
+        $this->assertEquals($payload['info']['deviceWidth'], $info['device_width']);
+        $this->assertEquals($payload['info']['deviceHeight'], $info['device_height']);
+
+        $clickData = file($clickStorageFile);
+        $this->assertEquals(count($payload['click']), count($clickData));
+
+        foreach ($clickData as $key => $click) {
+            $click = json_decode($click, true);
+
+            $this->assertEquals($payload['click'][$key]['x'], $click['x']);
+            $this->assertEquals($payload['click'][$key]['y'], $click['y']);
+            $this->assertEquals($payload['click'][$key]['element'], $click['element']);
+        }
     }
 
     public function testGetUserId()
