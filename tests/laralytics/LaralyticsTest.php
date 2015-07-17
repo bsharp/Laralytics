@@ -217,7 +217,7 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
      */
     public function testUrlInsertSyslogd()
     {
-        // set syslog driver
+        // set syslogd driver
         app('config')->set('laralytics.driver', 'syslogd');
         app('config')->set('laralytics.syslog.facility', LOG_LOCAL0);
         app('config')->set('laralytics.syslog.remote', [
@@ -252,7 +252,7 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
                 break;
             }
 
-            if (strpos($line, '{"host"') > -1) {
+            if (strpos($line, 'laralytics-url') > -1) {
                 $lines[] = json_decode(substr($line, strpos($line, '{')), true);
             }
         }
@@ -437,8 +437,8 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         $instance->payload($request, $payload, true);
 
         $infoData = file($infoStorageFile);
-        $this->assertEquals(1, count($infoData));
-        $info = json_decode(array_shift($info), true);
+        $this->assertEquals(count($infoData), 1);
+        $info = json_decode(array_shift($infoData), true);
 
         $this->assertEquals($payload['info']['version'], $info['version']);
         $this->assertEquals($payload['info']['browserWidth'], $info['browser_width']);
@@ -455,6 +455,151 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
             $this->assertEquals($payload['click'][$key]['x'], $click['x']);
             $this->assertEquals($payload['click'][$key]['y'], $click['y']);
             $this->assertEquals($payload['click'][$key]['element'], $click['element']);
+        }
+
+        $customData = file($customStorageFile);
+        $this->assertEquals(count($payload['custom']), count($customData));
+
+        foreach ($customData as $key => $custom) {
+            $custom = json_decode($custom, true);
+
+            $this->assertEquals($payload['custom'][$key]['x'], $custom['x']);
+            $this->assertEquals($payload['custom'][$key]['y'], $custom['y']);
+            $this->assertEquals($payload['custom'][$key]['element'], $custom['element']);
+        }
+    }
+
+    /**
+     * Test the payload method with the syslog driver.
+     */
+    public function testPayloadInsertSyslog()
+    {
+        // set syslog driver
+        app('config')->set('laralytics.driver', 'syslog');
+        app('config')->set('laralytics.syslog.facility', LOG_LOCAL0);
+
+        $instance = new Laralytics();
+        $payload = $this->getSamplePayload();
+
+        /** @var \Illuminate\Http\Request $request */
+        $request = app()->make('Illuminate\Http\Request');
+        $request = $request::create(str_random(5), 'GET');
+
+        $instance->payload($request, $payload, true);
+
+        $file = file('/var/log/syslog');
+        $file = array_reverse($file);
+
+        $linesInfo = '';
+        $linesClick = [];
+        $linesCustom = [];
+
+        foreach ($file as $line) {
+
+            if (strpos($line, 'laralytics-info') > -1 && empty($linesInfo)) {
+                $linesInfo = json_decode(substr($line, strpos($line, '{')), true);
+            }
+
+            if (strpos($line, 'laralytics-click') > -1 && count($linesClick) < count($payload['click'])) {
+                $linesClick[] = json_decode(substr($line, strpos($line, '{')), true);
+            }
+
+            if (strpos($line, 'laralytics-custom') > -1 && count($linesCustom) < count($payload['custom'])) {
+                $linesCustom[] = json_decode(substr($line, strpos($line, '{')), true);
+            }
+        }
+
+        $linesClick = array_reverse($linesClick);
+        $linesCustom = array_reverse($linesCustom);
+
+        $this->assertEquals($payload['info']['version'], $linesInfo['version']);
+        $this->assertEquals($payload['info']['browserWidth'], $linesInfo['browser_width']);
+        $this->assertEquals($payload['info']['browserHeight'], $linesInfo['browser_height']);
+        $this->assertEquals($payload['info']['deviceWidth'], $linesInfo['device_width']);
+        $this->assertEquals($payload['info']['deviceHeight'], $linesInfo['device_height']);
+
+        foreach ($linesClick as $key => $click) {
+
+            $this->assertEquals($payload['click'][$key]['x'], $click['x']);
+            $this->assertEquals($payload['click'][$key]['y'], $click['y']);
+            $this->assertEquals($payload['click'][$key]['element'], $click['element']);
+        }
+
+        foreach ($linesCustom as $key => $custom) {
+
+            $this->assertEquals($payload['custom'][$key]['x'], $custom['x']);
+            $this->assertEquals($payload['custom'][$key]['y'], $custom['y']);
+            $this->assertEquals($payload['custom'][$key]['element'], $custom['element']);
+        }
+    }
+
+    /**
+     * Test the payload method with the syslogd driver.
+     */
+    public function testPayloadInsertSyslogd()
+    {
+        //@TODO: find a way to specify identity using syslogd
+
+        // set syslogd driver
+        app('config')->set('laralytics.driver', 'syslogd');
+        app('config')->set('laralytics.syslog.facility', LOG_LOCAL0);
+        app('config')->set('laralytics.syslog.remote', [
+            'host' => '127.0.0.1',
+            'port' => 514
+        ]);
+
+        $instance = new Laralytics();
+        $payload = $this->getSamplePayload();
+
+        /** @var \Illuminate\Http\Request $request */
+        $request = app()->make('Illuminate\Http\Request');
+        $request = $request::create(str_random(5), 'GET');
+
+        $instance->payload($request, $payload, true);
+
+        $file = file('/var/log/syslog');
+        $file = array_reverse($file);
+
+        $linesInfo = '';
+        $linesClick = [];
+        $linesCustom = [];
+
+        foreach ($file as $line) {
+
+            if (strpos($line, 'laralytics-info') > -1 && empty($linesInfo)) {
+                $linesInfo = json_decode(substr($line, strpos($line, '{')), true);
+            }
+
+            if (strpos($line, 'laralytics-click') > -1 && count($linesClick) < count($payload['click'])) {
+                $linesClick[] = json_decode(substr($line, strpos($line, '{')), true);
+            }
+
+            if (strpos($line, 'laralytics-custom') > -1 && count($linesCustom) < count($payload['custom'])) {
+                $linesCustom[] = json_decode(substr($line, strpos($line, '{')), true);
+            }
+        }
+
+        $linesClick = array_reverse($linesClick);
+        $linesCustom = array_reverse($linesCustom);
+
+        $this->assertEquals($payload['info']['version'], $linesInfo['version']);
+        $this->assertEquals($payload['info']['browserWidth'], $linesInfo['browser_width']);
+        $this->assertEquals($payload['info']['browserHeight'], $linesInfo['browser_height']);
+        $this->assertEquals($payload['info']['deviceWidth'], $linesInfo['device_width']);
+        $this->assertEquals($payload['info']['deviceHeight'], $linesInfo['device_height']);
+
+        foreach ($linesClick as $key => $click) {
+
+            $this->assertEquals($payload['click'][$key]['x'], $click['x']);
+            $this->assertEquals($payload['click'][$key]['y'], $click['y']);
+            $this->assertEquals($payload['click'][$key]['element'], $click['element']);
+        }
+
+        foreach ($linesCustom as $key => $custom) {
+
+            $this->assertEquals($payload['custom'][$key]['x'], $custom['x']);
+            $this->assertEquals($payload['custom'][$key]['y'], $custom['y']);
+            $this->assertEquals($payload['custom'][$key]['element'], $custom['element']);
         }
     }
 
