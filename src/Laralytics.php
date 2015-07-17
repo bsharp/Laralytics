@@ -260,7 +260,13 @@ class Laralytics
         $stream->setFormatter(new LineFormatter("%context%\n"));
         $log->pushHandler($stream);
 
-        $log->info('', $data);
+        if (isset($data[0]) and is_array($data[0])) {
+            foreach ($data as $line) {
+                $log->info('', $line);
+            }
+        } else {
+            $log->info('', $data);
+        }
     }
 
     /**
@@ -276,8 +282,13 @@ class Laralytics
         $syslog->setFormatter(new LineFormatter("%context%\n"));
         $log->pushHandler($syslog);
 
-
-        $log->info('', $data);
+        if (isset($data[0]) and is_array($data[0])) {
+            foreach ($data as $line) {
+                $log->info('', $line);
+            }
+        } else {
+            $log->info('', $data);
+        }
     }
 
     /**
@@ -296,8 +307,13 @@ class Laralytics
         $syslog->setFormatter(new LineFormatter('laralytics-' . $type . " %context%\n"));
         $log->pushHandler($syslog);
 
-
-        $log->info('', $data);
+        if (isset($data[0]) and is_array($data[0])) {
+            foreach ($data as $line) {
+                $log->info('', $line);
+            }
+        } else {
+            $log->info('', $data);
+        }
     }
 
     /**
