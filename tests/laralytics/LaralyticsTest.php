@@ -589,14 +589,12 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         $this->assertEquals($payload['info']['deviceHeight'], $linesInfo['device_height']);
 
         foreach ($linesClick as $key => $click) {
-
             $this->assertEquals($payload['click'][$key]['x'], $click['x']);
             $this->assertEquals($payload['click'][$key]['y'], $click['y']);
             $this->assertEquals($payload['click'][$key]['element'], $click['element']);
         }
 
         foreach ($linesCustom as $key => $custom) {
-
             $this->assertEquals($payload['custom'][$key]['x'], $custom['x']);
             $this->assertEquals($payload['custom'][$key]['y'], $custom['y']);
             $this->assertEquals($payload['custom'][$key]['element'], $custom['element']);
