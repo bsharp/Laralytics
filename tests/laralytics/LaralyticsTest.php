@@ -601,6 +601,19 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         }
     }
 
+    public function testCheckCookie()
+    {
+        $instance = new Laralytics();
+
+        /** @var \Illuminate\Http\Request $request */
+        $request = app()->make('Illuminate\Http\Request');
+        $request = $request::create(str_random(5), 'GET');
+
+        $cookie = $instance->checkCookie($request);
+
+        $this->assertInstanceOf('Symfony\Component\HttpFoundation\Cookie', $cookie);
+    }
+
     public function testGetUserId()
     {
         $instance = Mockery::mock('Bsharp\Laralytics\Laralytics')->shouldAllowMockingProtectedMethods();
