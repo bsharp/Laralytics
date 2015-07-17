@@ -207,7 +207,7 @@ class Laralytics
                 $this->insertSyslog($type, $data);
                 break;
             case 'syslogd':
-                $this->insertSyslogd($data);
+                $this->insertSyslogd($type, $data);
                 break;
         }
     }
@@ -285,7 +285,7 @@ class Laralytics
      *
      * @param array $data
      */
-    protected function insertSyslogd($data)
+    protected function insertSyslogd($type, $data)
     {
         $log = new Logger('laralytics');
         $syslog = new SyslogUdpHandler(
@@ -293,7 +293,7 @@ class Laralytics
             $this->syslog['remote']['port'],
             $this->syslog['facility']
         );
-        $syslog->setFormatter(new LineFormatter("%context%\n"));
+        $syslog->setFormatter(new LineFormatter('laralytics-' . $type . " %context%\n"));
         $log->pushHandler($syslog);
 
 
