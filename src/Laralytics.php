@@ -160,8 +160,6 @@ class Laralytics
      */
     private function payloadInfo(Request $request, array $userInfo)
     {
-        // @TODO: use Laravel validation to valideate user input here
-
         $info = [];
 
         foreach ($userInfo as $key => $value) {
