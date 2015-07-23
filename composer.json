@@ -2,7 +2,7 @@
     "name": "bsharp/laralytics",
     "description": "A simple analytics tool for Laravel",
     "keywords": ["laravel", "laravel5", "analytics"],
-    "homepage": "https://github.com/nicolasbeauvais/laralytics",
+    "homepage": "https://github.com/bsharp/laralytics",
     "authors": [
         {
             "name": "Nicolas Beauvais",
