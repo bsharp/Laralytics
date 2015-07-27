@@ -7,6 +7,10 @@
         {
             "name": "Nicolas Beauvais",
             "email": "nicolasbeauvais1@gmail.com"
+        },
+        {
+            "name": "Gaetan Boedec",
+            "email": "gboedec@bsharp.io"
         }
     ],
     "license": "MIT",
