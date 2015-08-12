@@ -195,7 +195,6 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         $lines = [];
 
         foreach ($file as $line) {
-
             if (count($lines) === 2) {
                 break;
             }
@@ -247,7 +246,6 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         $lines = [];
 
         foreach ($file as $line) {
-
             if (count($lines) === 2) {
                 break;
             }
@@ -495,7 +493,6 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         $linesCustom = [];
 
         foreach ($file as $line) {
-
             if (strpos($line, 'laralytics-info') > -1 && empty($linesInfo)) {
                 $linesInfo = json_decode(substr($line, strpos($line, '{')), true);
             }
@@ -519,14 +516,12 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         $this->assertEquals($payload['info']['deviceHeight'], $linesInfo['device_height']);
 
         foreach ($linesClick as $key => $click) {
-
             $this->assertEquals($payload['click'][$key]['x'], $click['x']);
             $this->assertEquals($payload['click'][$key]['y'], $click['y']);
             $this->assertEquals($payload['click'][$key]['element'], $click['element']);
         }
 
         foreach ($linesCustom as $key => $custom) {
-
             $this->assertEquals($payload['custom'][$key]['x'], $custom['x']);
             $this->assertEquals($payload['custom'][$key]['y'], $custom['y']);
             $this->assertEquals($payload['custom'][$key]['element'], $custom['element']);
@@ -565,7 +560,6 @@ class LaralyticsTest extends \Orchestra\Testbench\TestCase
         $linesCustom = [];
 
         foreach ($file as $line) {
-
             if (strpos($line, 'laralytics-info') > -1 && empty($linesInfo)) {
                 $linesInfo = json_decode(substr($line, strpos($line, '{')), true);
             }
