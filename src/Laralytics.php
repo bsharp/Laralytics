@@ -109,7 +109,6 @@ class Laralytics
     private function addEventData(&$array, Request $request)
     {
         foreach ($array as $key => $value) {
-
             $array[$key]['user_id'] = $this->getUserId();
 
             // If we don't have a user ID we replace it with a session token
