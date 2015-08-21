@@ -15,6 +15,14 @@ To install Laralytics as a Composer package to be used with Laravel 5.*, simply 
   "Bsharp/laralytics": "dev-master"
 ```
 
+#### Add the service provider
+
+Add this line to your `config/app.php` file in the service providers array:
+
+```
+Bsharp\Laralytics\LaralyticsServiceProvider::class,
+```
+
 ### Publish
 
 To add all laralytics resources to your app you need to publish them using the `vendor:publish` artisan command
