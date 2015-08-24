@@ -14,7 +14,6 @@ Route::post('laralytics', function (Bsharp\Laralytics\Laralytics $laralytics, Il
 
     // Check for page cookie if we have info in the payload
     if (!empty($payload['info'])) {
-
         $hasPageCookie = $laralytics->checkPageCookie($request);
 
         // Page cookie with request uuid
