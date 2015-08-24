@@ -30,8 +30,14 @@ return [
     |
     */
     'cookie' =>[
-        'name'     => 'laralytics_tracker',
-        'duration' => 2628000
+        'global' => [
+            'name'     => 'laralytics_global_tracker',
+            'duration' => 2628000
+        ],
+        'page' => [
+            'name'     => 'laralytics_page_tracker',
+            'duration' => 60
+        ]
     ],
 
     /*

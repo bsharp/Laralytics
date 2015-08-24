@@ -7,6 +7,8 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Logger;
+use Ramsey\Uuid\Uuid;
+use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * Class Laralytics
@@ -30,9 +32,14 @@ class Laralytics
     private $syslog;
 
     /**
-     * @var string $ timezone
+     * @var string $timezone
      */
     private $timezone;
+
+    /**
+     * @var string $pageUuid
+     */
+    private $pageUuid;
 
     /**
      * Constructor
@@ -53,8 +60,12 @@ class Laralytics
      * Log a visited path in database.
      *
      * @param Request $request
+     *
+     * @param \Illuminate\Http\Response $response
+     *
+     * @return \Symfony\Component\HttpFoundation\Cookie
      */
-    public function url(Request $request)
+    public function url(Request $request, $response)
     {
         $host = $request->getHttpHost();
         $method = $request->method();
@@ -74,7 +85,12 @@ class Laralytics
         $data['hash'] = $this->hash($data['host'], $data['path']);
         $data['created_at'] = date('Y-m-d H:i:s');
 
+        $data['uuid'] = Uuid::uuid1()->toString();
+
         $this->generic_insert('url', $data);
+
+        // Set uuid to cookie
+        return $this->addCookieToResponse($data['uuid'], $response);
     }
 
     /**
@@ -82,47 +98,39 @@ class Laralytics
      *
      * @param Request $request
      * @param $payload
-     * @param bool $insertInfo
+     * @param bool $insertUserInfo
      */
-    public function payload(Request $request, array $payload, $insertInfo = false)
+    public function payload(Request $request, array $payload, $insertUserInfo = false)
     {
         // Insert user info if needed
-        if ($insertInfo) {
+        if ($insertUserInfo) {
             $this->payloadInfo($request, $payload['info']);
         }
 
         $click = $payload['click'];
         $custom = $payload['custom'];
 
-        // Format click & custom
-        $this->addEventData($click, $request);
-        $this->addEventData($custom, $request);
+        // Format click & custom javascript time
+        $this->addPayloadMetaData($click);
+        $this->addPayloadMetaData($custom);
 
+        // Insert payload
         $this->generic_insert('click', $click);
         $this->generic_insert('custom', $custom);
     }
 
     /**
+     * Add generic data to a Laralytics event.
+     *
      * @param $array
-     * @param Request $request
      */
-    private function addEventData(&$array, Request $request)
+    private function addPayloadMetaData(&$array)
     {
         foreach ($array as $key => $value) {
-            $array[$key]['user_id'] = $this->getUserId();
+            // Add current uuid
+            $array[$key]['uuid'] = $this->pageUuid;
 
-            // If we don't have a user ID we replace it with a session token
-            if ($array[$key]['user_id'] === null) {
-                $array[$key]['session'] = $request->cookie($this->cookie['session']);
-            }
-
-            $host = $request->getHttpHost();
-            $path = $request->path();
-
-            $array[$key]['host'] = $host;
-            $array[$key]['path'] = $path;
-            $array[$key]['hash'] = $this->hash($host, $path);
-
+            // Override javascript timestamp
             $jsTime = Carbon::createFromTimestamp($array[$key]['datetime']);
             $time = Carbon::now($this->timezone);
 
@@ -141,41 +149,84 @@ class Laralytics
      *
      * @return \Symfony\Component\HttpFoundation\Cookie|null
      */
-    public function checkCookie(Request $request)
+    public function checkGlobalCookie(Request $request)
     {
         $cookie = app()->make('Illuminate\Contracts\Cookie\Factory');
 
         // if the user don't have the cookie we create it
-        if (!$request->cookie($this->cookie['name'])) {
-            return $cookie->make($this->cookie['name'], md5(rand()), $this->cookie['duration']);
+        if (!$request->cookie($this->cookie['global']['name'])) {
+            return $cookie->make($this->cookie['global']['name'], md5(rand()), $this->cookie['global']['duration']);
         }
 
         return null;
     }
 
     /**
+     * Check if the current user already has a Laralytics page cookie.
+     *
+     * @param Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\Cookie|null
+     */
+    public function checkPageCookie(Request $request)
+    {
+        // if the user don't have the cookie we stop the request
+        if (!$request->cookie($this->cookie['page']['name'])) {
+            return false;
+        }
+
+        $this->pageUuid = $request->cookie($this->cookie['page']['name']);
+
+        return true;
+    }
+
+    /**
+     * Add the Laralytics page tracker cookie to the response cookies.
+     *
+     * @param string $uuid
+     * @param \Illuminate\Http\Response $response
+     *
+     * @return \Illuminate\Http\Response
+     */
+    protected function addCookieToResponse($uuid, $response)
+    {
+        $config = config('session');
+
+        $response->headers->setCookie(
+            new Cookie(
+                $this->cookie['page']['name'], $uuid, time() + $this->cookie['page']['duration'],
+                $config['path'], $config['domain'], false, false
+            )
+        );
+
+        return $response;
+    }
+
+    /**
+     * Format and insert a payload info.
+     *
      * @param Request $request
      * @param array $userInfo
      */
     private function payloadInfo(Request $request, array $userInfo)
     {
-        $info = [];
+        $data = [];
 
         foreach ($userInfo as $key => $value) {
-            $info[snake_case($key)] = $value;
+            $data[snake_case($key)] = $value;
         }
 
-        $info['user_id'] = $this->getUserId();
+        $data['user_id'] = $this->getUserId();
 
         // If we don't have a user ID we replace it with a session token
-        if ($info['user_id'] === null) {
-            $info['session'] = $request->cookie($this->cookie['session']);
+        if ($data['user_id'] === null) {
+            $data['session'] = $request->cookie($this->cookie['session']);
         }
 
-        $info['created_at'] = date('Y-m-d H:i:s');
-        $info['session'] = $request->cookie($this->cookie['session']);
+        $data['created_at'] = date('Y-m-d H:i:s');
+        $data['session'] = $request->cookie($this->cookie['session']);
 
-        $this->generic_insert('info', $info);
+        $this->generic_insert('info', $data);
     }
 
     /**
@@ -291,6 +342,7 @@ class Laralytics
     /**
      * Insert log in a remote syslog using Monolog.
      *
+     * @param string $type
      * @param array $data
      */
     protected function insertSyslogd($type, $data)

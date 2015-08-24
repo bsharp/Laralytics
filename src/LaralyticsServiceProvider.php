@@ -1,15 +1,13 @@
 <?php namespace Bsharp\Laralytics;
 
-use Illuminate\Translation\TranslationServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
 /**
  * Class LaralyticsServiceProvider
  * @package Bsharp\Laralytics
  */
-class LaralyticsServiceProvider extends TranslationServiceProvider
+class LaralyticsServiceProvider extends ServiceProvider
 {
-    protected $defer = false;
-
     public function boot()
     {
         // Include Laralytics routes for API

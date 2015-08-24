@@ -9,14 +9,24 @@ Route::post('laralytics', function (Bsharp\Laralytics\Laralytics $laralytics, Il
 
     // Check for tracking cookie if we have info in the payload
     if (!empty($payload['info'])) {
-        $trackerCookie = $laralytics->checkCookie($request);
+        $trackerCookie = $laralytics->checkGlobalCookie($request);
     }
 
-    // Insert payload
-    $laralytics->payload($request, $payload, !is_null($trackerCookie));
+    // Check for page cookie if we have info in the payload
+    if (!empty($payload['info'])) {
+
+        $hasPageCookie = $laralytics->checkPageCookie($request);
+
+        // Page cookie with request uuid
+        if ($hasPageCookie) {
+            // Insert payload
+            $laralytics->payload($request, $payload, !is_null($trackerCookie));
+        }
+    }
 
     if (!is_null($trackerCookie)) {
         return response()->json()->withCookie($trackerCookie);
     }
 
+    return response()->json();
 });

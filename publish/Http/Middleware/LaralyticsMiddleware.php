@@ -38,8 +38,6 @@ class LaralyticsMiddleware
      */
     public function handle($request, Closure $next)
     {
-        Laralytics::url($request);
-
-        return $next($request);
+        return Laralytics::url($request, $next($request));
     }
 }
