@@ -92,6 +92,6 @@ return [
     |
     */
     'user_id' => function () {
-        return \Auth::user();
+        return \Auth::user() === null ? null : Auth::user()->id;
     }
 ];
