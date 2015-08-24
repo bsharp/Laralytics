@@ -5,7 +5,6 @@ var laralytics = function(){
   // Param of laralytics
   var defaultParam = {
     API : '/laralytics',
-    Version : null,
     Limit : 0,
   };
 
@@ -94,7 +93,6 @@ var laralytics = function(){
 
     // Set first tracks of user informations
     payLoad.info = {
-      version: finalParam.Version,
       browser: window.navigator.userAgent,
       browserWidth : window.innerWidth,
       browserHeight : window.innerHeight,
