@@ -21,12 +21,7 @@ class CreateLaralyticsCustomTable extends Migration
             $engine = Config::get('database.default');
 
             $table->increments('id');
-            $table->integer('user_id')->index()->nullable();
-            $table->string('session', 250)->nullable();
-            $table->string('hash', 64)->index();
-            $table->string('host', 255)->index();
-            $table->string('path', 255);
-            $table->string('version', 255)->index()->nullable();
+            $table->string('uuid', 64)->index();
             $table->string('event', 64)->index();
             $table->integer('x');
             $table->integer('y');

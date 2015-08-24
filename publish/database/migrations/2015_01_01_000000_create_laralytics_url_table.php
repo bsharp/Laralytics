@@ -23,6 +23,8 @@ class CreateLaralyticsUrlTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->index()->nullable();
             $table->string('session', 250)->nullable();
+            $table->string('uuid', 64)->index();
+            $table->string('version', 255)->index()->nullable();
             $table->string('hash', 64)->index();
             $table->string('host', 255)->index();
             $table->string('path', 255);
