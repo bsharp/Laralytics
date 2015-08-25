@@ -128,5 +128,3 @@ var laralytics = function(){
     init:init,
   };
 }();
-
-laralytics.init();
