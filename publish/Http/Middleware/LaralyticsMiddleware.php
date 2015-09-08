@@ -38,6 +38,10 @@ class LaralyticsMiddleware
      */
     public function handle($request, Closure $next)
     {
+        if ($request->is('laralytics')) {
+            return $next($request);
+        }
+
         return Laralytics::url($request, $next($request));
     }
 }
