@@ -91,7 +91,5 @@ return [
     | can change it to whatever method that return an user_id as a int.
     |
     */
-    'user_id' => function () {
-        return \Auth::user() === null ? null : Auth::user()->id;
-    }
+    'user_id' => '',
 ];
