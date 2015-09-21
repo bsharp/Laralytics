@@ -371,7 +371,7 @@ class Laralytics
      * @return int
      */
     protected function getUserId()
-    {git add 
+    {
         $user_id = \Auth::user() === null ? null : \Auth::user()->id;
 
         /** @var \Closure $user_id_closure */
