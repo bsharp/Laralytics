@@ -39,6 +39,8 @@ class LaralyticsController extends Controller
                 // Insert payload
                 $laralytics->payload($request, $payload, !is_null($trackerCookie));
             }
+        } else {
+            $laralytics->payload($request, $payload, !is_null($trackerCookie));
         }
 
         if (!is_null($trackerCookie)) {
