@@ -40,6 +40,7 @@ class LaralyticsController extends Controller
                 $laralytics->payload($request, $payload, !is_null($trackerCookie));
             }
         } else {
+            $laralytics->checkPageCookie($request);
             $laralytics->payload($request, $payload, !is_null($trackerCookie));
         }
 
