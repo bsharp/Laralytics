@@ -98,6 +98,7 @@ var laralytics = function(){
       browserHeight : window.innerHeight,
       deviceWidth : window.screen.width,
       deviceHeight : window.screen.height,
+      referral : document.referrer || null,
     };
 
     var elemCustom = document.querySelectorAll('[data-laralytics]');
