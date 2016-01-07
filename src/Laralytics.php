@@ -85,7 +85,7 @@ class Laralytics
         $data['hash'] = $this->hash($data['host'], $data['path']);
         $data['created_at'] = date('Y-m-d H:i:s');
 
-        $data['uuid'] = Uuid::uuid1()->toString();
+        $data['uuid'] = Uuid::uuid4()->toString();
 
         $this->generic_insert('url', $data);
 
