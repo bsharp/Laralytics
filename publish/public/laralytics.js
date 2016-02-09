@@ -15,6 +15,8 @@ var laralytics = function(){
     custom: [],
   };
 
+  var finalParam = {};
+
   // Get value of a cookie
   var getCookie = function(cname) {
     var name = cname + '=';
@@ -61,16 +63,17 @@ var laralytics = function(){
   };
 
   // Custom click with data attributes
-  var custom = function(_finalParam) {
+  var custom = function(event) {
     payLoad.custom.push({
       type: event.type,
       x: event.clientX,
       y: event.clientY,
       datetime : Math.floor(new Date().getTime() / 1000),
       element : event.target.id || event.target.className ||
-        event.target.localName
+        event.target.localName,
+      laralyticsElem: event.target.getAttribute('data-laralyticsElem') || ''
     });
-    checkLength(_finalParam);
+    checkLength(finalParam);
   };
 
   // Send payload to API
@@ -89,7 +92,7 @@ var laralytics = function(){
   var init = function(customParam) {
 
     // Set param for analytics
-    var finalParam = extend({}, defaultParam, customParam);
+    finalParam = extend({}, defaultParam, customParam);
 
     // Set first tracks of user informations
     payLoad.info = {
@@ -111,11 +114,26 @@ var laralytics = function(){
 
     document.addEventListener('click', function(event){
       payLoad.click.push({
+        type: event.type,
         x: event.clientX,
         y: event.clientY,
         datetime : Math.floor(new Date().getTime() / 1000),
         element : event.target.id || event.target.className ||
-          event.target.localName
+          event.target.localName,
+        laralyticsElem: event.target.getAttribute('data-laralyticsElem') || ''
+      });
+      checkLength(finalParam);
+    });
+
+    document.addEventListener('submit', function(event){
+      payLoad.click.push({
+        type: event.type,
+        x: event.clientX,
+        y: event.clientY,
+        datetime : Math.floor(new Date().getTime() / 1000),
+        element : event.target.id || event.target.className ||
+          event.target.localName,
+        laralyticsElem: event.target.getAttribute('data-laralyticsElem') || ''
       });
       checkLength(finalParam);
     });

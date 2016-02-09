@@ -115,8 +115,8 @@ class Laralytics
         $this->addPayloadMetaData($custom);
 
         // Insert payload
-        $this->generic_insert('click', $click);
-        $this->generic_insert('custom', $custom);
+        $this->generic_insert('click', array_merge($click, $custom));
+        //$this->generic_insert('custom', $custom);
     }
 
     /**
