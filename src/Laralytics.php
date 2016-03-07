@@ -9,6 +9,8 @@ use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Logger;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Cookie;
+use Session;
+
 
 /**
  * Class Laralytics
@@ -47,26 +49,17 @@ class Laralytics
     public function __construct()
     {
         $this->cookie = config('laralytics.cookie');
-        $this->cookie['session'] = config('session.cookie');
 
         $this->driver = config('laralytics.driver');
         $this->models = config('laralytics.models');
         $this->syslog = config('laralytics.syslog');
 
         $this->timezone = config('app.timezone');
+
+        $this->session = config('session');
     }
 
-    /**
-     * Log a visited path in database.
-     *
-     * @param Request $request
-     *
-     * @param \Illuminate\Http\Response $response
-     *
-     * @return \Symfony\Component\HttpFoundation\Cookie
-     */
-    public function url(Request $request, $response)
-    {
+    public function common(Request $request, &$response) {
         $host = $request->getHttpHost();
         $method = $request->method();
 
@@ -75,48 +68,41 @@ class Laralytics
 
         $data = compact('host', 'path', 'method');
 
-        $data['user_id'] = $this->getUserId();
-
-        // If we don't have a user ID we replace it with a session token
-        if ($data['user_id'] === null) {
-            $data['session'] = $request->cookie($this->cookie['session']);
-        }
-
-        $data['hash'] = $this->hash($data['host'], $data['path']);
         $data['created_at'] = date('Y-m-d H:i:s');
 
-        $data['uuid'] = Uuid::uuid4()->toString();
+        $data['user_id'] = $this->getUserId();
+        $data['global_tracker'] = $this->getGlobalCookieValue($request, $response);
+
+        $data['session'] = Session::getId();
+
+        return $data;
+    }
+
+    public function url(Request $request, &$response)
+    {
+        $data = $this->common($request, $response);
+        $data['page_tracker'] = $this->setPageCookieValue($response);
 
         $this->generic_insert('url', $data);
 
-        // Set uuid to cookie
-        return $this->addCookieToResponse($data['uuid'], $response);
+        return $response;
     }
 
-    /**
-     * Parse and log a payload.
-     *
-     * @param Request $request
-     * @param $payload
-     * @param bool $insertUserInfo
-     */
-    public function payload(Request $request, array $payload, $insertUserInfo = false)
+    public function payload(Request $request, &$response, array $payload)
     {
+        $insertUserInfo = !Session::get('laralytics_known_visitor');
+        $data = $this->common($request, $response);
+
         // Insert user info if needed
         if ($insertUserInfo) {
-            $this->payloadInfo($request, $payload['info']);
+            $this->payloadInfo($request, $response, $payload['info'], $data);
         }
 
-        $click = $payload['click'];
-        $custom = $payload['custom'];
-
-        // Format click & custom javascript time
-        $this->addPayloadMetaData($click);
-        $this->addPayloadMetaData($custom);
+        $all_data = $payload['click'] + $payload['custom'];
+        $all_data = $this->addPayloadMetaData($all_data, $data);
 
         // Insert payload
-        $this->generic_insert('click', array_merge($click, $custom));
-        //$this->generic_insert('custom', $custom);
+        $this->generic_insert('click', $all_data);
     }
 
     /**
@@ -124,117 +110,81 @@ class Laralytics
      *
      * @param $array
      */
-    private function addPayloadMetaData(&$array)
+    private function addPayloadMetaData($array, $data)
     {
-        foreach ($array as $key => $value) {
-            // Add current uuid
-            $array[$key]['uuid'] = $this->pageUuid;
+        $out = []
+        foreach ($array as $value) {
+            // Add current page_tracker uuid
+            $value['page_tracker'] = $this->pageUuid;
 
             // Override javascript timestamp
-            $jsTime = Carbon::createFromTimestamp($array[$key]['datetime']);
+            $jsTime = Carbon::createFromTimestamp($value['datetime']);
             $time = Carbon::now($this->timezone);
 
             $time->minute = $jsTime->minute;
             $time->second = $jsTime->second;
 
-            $array[$key]['created_at'] = $time->toDateTimeString();
-            unset($array[$key]['datetime']);
-        }
-    }
+            $value['created_at'] = $time->toDateTimeString();
+            unset($value['datetime']);
 
-    /**
-     * Check if the current user already has a Laralytics tracking cookie.
-     *
-     * @param Request $request
-     *
-     * @return \Symfony\Component\HttpFoundation\Cookie|null
-     */
-    public function checkGlobalCookie(Request $request)
-    {
-        $cookie = app()->make('Illuminate\Contracts\Cookie\Factory');
-
-        // if the user don't have the cookie we create it
-        if (!$request->cookie($this->cookie['global']['name'])) {
-            return $cookie->make($this->cookie['global']['name'], md5(rand()), $this->cookie['global']['duration']);
+            $out[] = array_merge($data, $value);
         }
 
-        return null;
+        return $out;
     }
 
-    /**
-     * Check if the current user already has a Laralytics page cookie.
-     *
-     * @param Request $request
-     *
-     * @return \Symfony\Component\HttpFoundation\Cookie|null
-     */
+    private function setPageCookieValue(Request $request, &$response) {
+        $value = Uuid::uuid4()->toString();
+        Session::put($this->cookie['page']['name'], $value);
+
+        $cookie = new Cookie($this->cookie['page']['name'], $value, 0, $this->session['domain'], $this->session['domain'], ((env('APP_URL_PREFIX', 'http://') == 'https://')?true:false), false);
+        $response->headers->setCookie($cookie);
+
+        return $value
+    }
+
+    public function getGlobalCookieValue(Request $request, &$response) {
+        if (!($value = $request->cookie($this->cookie['global']['name']))) {
+            $value = Uuid::uuid4()->toString();
+
+            $cookie = new Cookie($this->cookie['global']['name'], $value, time() + $this->cookie['global']['duration'], '/', $this->session['domain'], ((env('APP_URL_PREFIX', 'http://') == 'https://')?true:false), false);
+            $response->headers->setCookie($cookie);
+
+            Session::set('laralytics_known_visitor', false);
+        } else {
+            Session::set('laralytics_known_visitor', true);
+        }
+
+        return $value;
+    }
+
     public function checkPageCookie(Request $request)
     {
-        // if the user don't have the cookie we stop the request
-        if (!$request->cookie($this->cookie['page']['name'])) {
+        // page cookie is defined for each page view when page is loaded, so should be here when we check
+        // if the user doesn't have the cookie with the proper value we stop the request
+        if (
+                    !Session::has($this->cookie['page']['name'])
+                ||  !($value = $request->cookie($this->cookie['page']['name']))
+                ||  ($value != Session::get($this->cookie['page']['name']))
+            ) {
             return false;
         }
 
-        $this->pageUuid = $request->cookie($this->cookie['page']['name']);
+        $this->pageUuid = $value;
 
         return true;
     }
 
-    /**
-     * Add the Laralytics page tracker cookie to the response cookies.
-     *
-     * @param string $uuid
-     * @param \Illuminate\Http\Response $response
-     *
-     * @return \Illuminate\Http\Response
-     */
-    protected function addCookieToResponse($uuid, $response)
+    private function payloadInfo(Request $request, &$response, array $userInfo, $data)
     {
-        $config = config('session');
-
-        $response->headers->setCookie(
-            new Cookie(
-                $this->cookie['page']['name'], $uuid, time() + $this->cookie['page']['duration'],
-                $config['path'], $config['domain'], false, false
-            )
-        );
-
-        return $response;
-    }
-
-    /**
-     * Format and insert a payload info.
-     *
-     * @param Request $request
-     * @param array $userInfo
-     */
-    private function payloadInfo(Request $request, array $userInfo)
-    {
-        $data = [];
-
         foreach ($userInfo as $key => $value) {
             $data[snake_case($key)] = $value;
         }
 
-        $data['user_id'] = $this->getUserId();
-
-        // If we don't have a user ID we replace it with a session token
-        if ($data['user_id'] === null) {
-            $data['session'] = $request->cookie($this->cookie['session']);
-        }
-
-        $data['created_at'] = date('Y-m-d H:i:s');
-        $data['session'] = $request->cookie($this->cookie['session']);
-
         $this->generic_insert('info', $data);
     }
 
-    /**
-     * Call a specific insert by laralytics driver.
-     *
-     * @param $type
-     * @param $data
-     */
+    // handle storage
     private function generic_insert($type, $data)
     {
         if (empty($data)) {
@@ -374,24 +324,7 @@ class Laralytics
     {
         $user_id = \Auth::user() === null ? null : \Auth::user()->id;
 
-        /** @var \Closure $user_id_closure */
-        //$user_id_closure = config('laralytics.user_id');
-        //$user_id = $user_id_closure();
-
         // Sanitize value
         return $user_id  == 0 ? null : $user_id;
-    }
-
-    /**
-     * Hash a path string using the md4 (fastest) hashing algorithm.
-     *
-     * @param $host
-     * @param $path
-     *
-     * @return string
-     */
-    protected function hash($host, $path)
-    {
-        return hash('md4', $host . $path);
     }
 }

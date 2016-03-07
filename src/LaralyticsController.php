@@ -19,35 +19,15 @@ class LaralyticsController extends Controller
      */
     public function payload(Laralytics $laralytics, Request $request) {
 
-        $trackerCookie = null;
+        $response = response();
 
-        // Define payload
         $payload = $request->only('info', 'click', 'custom');
+        $pageCookie = $laralytics->checkPageCookie($request);
 
-        // Check for tracking cookie if we have info in the payload
-        if (!empty($payload['info'])) {
-            $trackerCookie = $laralytics->checkGlobalCookie($request);
+        if ($pageCookie) {
+            $laralytics->payload($request, $response, $payload, $pageCookie);
         }
 
-        // Check for page cookie if we have info in the payload
-        if (!empty($payload['info'])) {
-
-            $hasPageCookie = $laralytics->checkPageCookie($request);
-
-            // Page cookie with request uuid
-            if ($hasPageCookie) {
-                // Insert payload
-                $laralytics->payload($request, $payload, !is_null($trackerCookie));
-            }
-        } else {
-            $laralytics->checkPageCookie($request);
-            $laralytics->payload($request, $payload, !is_null($trackerCookie));
-        }
-
-        if (!is_null($trackerCookie)) {
-            return response()->json()->withCookie($trackerCookie);
-        }
-
-        return response()->json();
+        return $response->json();
     }
 }

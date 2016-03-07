@@ -31,12 +31,11 @@ return [
     */
     'cookie' =>[
         'global' => [
-            'name'     => 'laralytics_global_tracker',
-            'duration' => 2628000
+            'name'     => 'laralytics_return_tracker',
+            'duration' => 2628000,
         ],
         'page' => [
             'name'     => 'laralytics_page_tracker',
-            'duration' => 60
         ]
     ],
 
