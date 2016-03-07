@@ -60,14 +60,7 @@ class Laralytics
     }
 
     public function common(Request $request, &$response) {
-        $host = $request->getHttpHost();
-        $method = $request->method();
-
-        $path = $request->path();
-        $path = starts_with($path, '/') ? $path : '/' . $path;
-
-        $data = compact('host', 'path', 'method');
-
+        $data = [];
         $data['created_at'] = date('Y-m-d H:i:s');
 
         $data['user_id'] = $this->getUserId();
@@ -83,6 +76,14 @@ class Laralytics
         $data = $this->common($request, $response);
         $data['page_tracker'] = $this->setPageCookieValue($request, $response);
 
+        $host = $request->getHttpHost();
+        $method = $request->method();
+
+        $path = $request->path();
+        $path = starts_with($path, '/') ? $path : '/' . $path;
+
+        $data = compact('host', 'path', 'method');
+
         $this->generic_insert('url', $data);
 
         return $response;
@@ -90,7 +91,7 @@ class Laralytics
 
     public function payload(Request $request, &$response, array $payload)
     {
-        $insertUserInfo = !Session::get('laralytics_known_visitor');
+        $insertUserInfo = !Session::get('laralytics_known_visitor') && $payload['info'] != NULL;
         $data = $this->common($request, $response);
 
         // Insert user info if needed
