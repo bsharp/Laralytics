@@ -71,7 +71,7 @@ var laralytics = function(){
       datetime : Math.floor(new Date().getTime() / 1000),
       element : event.target.id || event.target.className ||
         event.target.localName,
-      laralyticsElem: event.target.getAttribute('data-laralyticsElem') || ''
+      laralyticsElem: event.target.getAttribute('data-laralytics-elem') || ''
     });
     checkLength(finalParam);
   };
@@ -120,7 +120,7 @@ var laralytics = function(){
         datetime : Math.floor(new Date().getTime() / 1000),
         element : event.target.id || event.target.className ||
           event.target.localName,
-        laralyticsElem: event.target.getAttribute('data-laralyticsElem') || ''
+        laralyticsElem: event.target.getAttribute('data-laralytics-elem') || ''
       });
       checkLength(finalParam);
     });
@@ -133,7 +133,7 @@ var laralytics = function(){
         datetime : Math.floor(new Date().getTime() / 1000),
         element : event.target.id || event.target.className ||
           event.target.localName,
-        laralyticsElem: event.target.getAttribute('data-laralyticsElem') || ''
+        laralyticsElem: event.target.getAttribute('data-laralytics-elem') || ''
       });
       checkLength(finalParam);
     });
