@@ -81,7 +81,7 @@ class Laralytics
     public function url(Request $request, &$response)
     {
         $data = $this->common($request, $response);
-        $data['page_tracker'] = $this->setPageCookieValue($response);
+        $data['page_tracker'] = $this->setPageCookieValue($request, $response);
 
         $this->generic_insert('url', $data);
 
