@@ -140,7 +140,7 @@ class Laralytics
         $cookie = new Cookie($this->cookie['page']['name'], $value, 0, $this->session['domain'], $this->session['domain'], ((env('APP_URL_PREFIX', 'http://') == 'https://')?true:false), false);
         $response->headers->setCookie($cookie);
 
-        return $value
+        return $value;
     }
 
     public function getGlobalCookieValue(Request $request, &$response) {
