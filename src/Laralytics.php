@@ -112,7 +112,7 @@ class Laralytics
      */
     private function addPayloadMetaData($array, $data)
     {
-        $out = []
+        $out = [];
         foreach ($array as $value) {
             // Add current page_tracker uuid
             $value['page_tracker'] = $this->pageUuid;
