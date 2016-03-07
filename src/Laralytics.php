@@ -76,13 +76,11 @@ class Laralytics
         $data = $this->common($request, $response);
         $data['page_tracker'] = $this->setPageCookieValue($request, $response);
 
-        $host = $request->getHttpHost();
-        $method = $request->method();
+        $data['host'] = $request->getHttpHost();
+        $data['method'] = $request->method();
 
         $path = $request->path();
-        $path = starts_with($path, '/') ? $path : '/' . $path;
-
-        $data = compact('host', 'path', 'method');
+        $data['path'] = starts_with($path, '/') ? $path : '/' . $path;
 
         $this->generic_insert('url', $data);
 
