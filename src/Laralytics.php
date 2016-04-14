@@ -136,7 +136,7 @@ class Laralytics
         $value = Uuid::uuid4()->toString();
         Session::put($this->cookie['page']['name'], $value);
 
-        $cookie = new Cookie($this->cookie['page']['name'], $value, 0, $this->session['domain'], $this->session['domain'], ((env('APP_URL_PREFIX', 'http://') == 'https://')?true:false), false);
+        $cookie = new Cookie($this->cookie['page']['name'], $value, 0, '/', $this->session['domain'], ((env('APP_URL_PREFIX', 'http://') == 'https://')?true:false), false);
         $response->headers->setCookie($cookie);
 
         return $value;
