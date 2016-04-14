@@ -16,9 +16,9 @@
     "license": "MIT",
     "require": {
         "php": ">=5.4.0",
-        "illuminate/support": "5.1.*",
+        "illuminate/support": "5.2.*",
         "monolog/monolog": "~1.11",
-        "nesbot/carbon": "~1.19",
+        "nesbot/carbon": "~1.20",
         "ramsey/uuid": "^3.0@dev"
     },
     "require-dev": {
