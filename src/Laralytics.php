@@ -97,6 +97,13 @@ class Laralytics
             $this->payloadInfo($request, $response, $payload['info'], $data);
         }
 
+        if (!is_array($payload['click'])) {
+            $payload['click'] = [];
+        }
+        if (!is_array($payload['custom'])) {
+            $payload['custom'] = [];
+        }
+
         $all_data = $payload['click'] + $payload['custom'];
         $all_data = $this->addPayloadMetaData($all_data, $data);
 
@@ -113,6 +120,10 @@ class Laralytics
     {
         $out = [];
         foreach ($array as $value) {
+            if (!isset($value['datetime'])) {
+                continue;
+            }
+
             // Add current page_tracker uuid
             $value['page_tracker'] = $this->pageUuid;
 
