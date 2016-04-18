@@ -42,6 +42,13 @@ You can specify which resource to publish one by one using:
 
 ```
 
+Add laralytics route for js event
+
+```
+  Route::post('laralytics', '\Bsharp\Laralytics\LaralyticsController@payload');
+```
+
+
 ### Configuration
 
 Open the `config/laralytics.php` file, here you can specify:
