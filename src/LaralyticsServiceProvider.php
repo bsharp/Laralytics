@@ -11,7 +11,7 @@ class LaralyticsServiceProvider extends ServiceProvider
     public function boot()
     {
         // Include Laralytics routes for API
-        include __DIR__ . '/routes.php';
+        // include __DIR__ . '/routes.php';
 
         /**
          * Register publish config
